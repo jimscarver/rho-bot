@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
+require('dotenv').config();
 
 // 'client.on('message')' commands are triggered when the
 // specified message is read in a text channel that the bot is in.
@@ -17,6 +18,7 @@ client.on('message', msg => {
   console.log(msg.author);
   if (!msg.author.bot && msg.content.match(/rholang/i)) {
     msg.reply('RHOlang is the language of RChain');
+    
   }
 });
 client.on('guildMemberAdd', member => {
@@ -27,6 +29,6 @@ client.on('guildMemberAdd', member => {
   // Send the message, mentioning the member
   channel.send(`Welcome to the server, ${member}`);
 });
-client.login("NDc5NzAyMDcyNDY4NDM5MDUw.Dldnxw.F9yENIDf4iQDzvOT_SF96XBs_v4");
+client.login(process.env.TOKEN );
 
 
