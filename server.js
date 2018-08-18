@@ -1,6 +1,6 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
-require('dotenv.js').config();
+require('dotenv').config();
 
 // 'client.on('message')' commands are triggered when the
 // specified message is read in a text channel that the bot is in.
