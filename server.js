@@ -1,5 +1,8 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
+var sys = require('sys')
+var exec = require('child_process').exec;
+
 require('dotenv').config();
 
 // 'client.on('message')' commands are triggered when the
@@ -17,7 +20,22 @@ client.on('message', msg => {
 client.on('message', msg => {
   //console.log(msg.author);
   if (!msg.author.bot && msg.content.match(/rholang/i)) {
-    msg.reply('RHOlang is the language of RChain');
+    let dir;
+    console.log(msg.content);
+    if (msg.content.match(/^rholang:/i)) {
+      console.log(msg.content);
+      let rholang = msg.content.substring(8);
+	console.log(rholang);
+      dir = exec("echo '@\"result\" ! ("+rholang+")'|rnode repl|tee repl.out|sed -n 's/.*@{\"result/ @{\"result/;s/ |.*//;/^ @/p'", function(err, stdout, stderr) {
+      //dir = exec("echo hello", function(err, stdout, stderr) {
+        if (err) {
+          // should have err.code here?  
+        }
+        console.log(stdout);
+        msg.reply(stdout);
+      });
+    } else
+      msg.reply('RHOlang is the language of RChain');
     
   }
 });
