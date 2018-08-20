@@ -24,18 +24,18 @@ client.on('message', msg => {
     console.log(msg.content);
     if (msg.content.match(/^rholang:/i)) {
       console.log(msg.content);
-      let rholang = msg.content.substring(8);
+      let rholang = msg.content.substring(8).replace(/[\r\n]/g, " ");
 	console.log(rholang);
-      dir = exec("echo '@\"result\" ! ("+rholang+")'|rnode repl|tee repl.out|sed -n 's/.*@{\"result/ @{\"result/;s/ |.*//;/^ @/p'", function(err, stdout, stderr) {
+      dir = exec("echo '@\"result\" ! ("+rholang+")'|rnode repl 2>&1|tee repl.out|sed -n '/Error: /p;s/.*@{\"result/ @{\"result/;s/ |.*//;/^ @/p'", function(err, stdout, stderr) {
       //dir = exec("echo hello", function(err, stdout, stderr) {
         if (err) {
           // should have err.code here?  
         }
         console.log(stdout);
-        msg.reply(stdout);
+        msg.reply(stdout+" (See the log: https://rchain-bounty.rhobot.net/js-logtail/#)");
       });
     } else
-      msg.reply('RHOlang is the language of RChain');
+      msg.reply("RHOlang is the language of RChain. Run a rholang program by typing:\nrholang: <your program>");
     
   }
 });
