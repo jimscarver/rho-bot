@@ -1,6 +1,7 @@
 
 Sample dialog from this bot. Modify to make your own bot.
 
+```
 jimscarverToday at 2:46 PM
 rholang!
 RHO-botBOTToday at 2:46 PM
@@ -40,6 +41,7 @@ rholang can be discussed here.
 RHO-botBOTToday at 2:56 PM
 @jimscarver, See the rholang tutorial at https://developer.rchain.coop/tutorial
 
+```
 
 Build a Discord Bot
 =========================
