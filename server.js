@@ -3,6 +3,7 @@ const client = new Discord.Client();
 var sys = require('sys')
 var exec = require('child_process').exec;
 var fs = require('fs');
+var matchRecursive = require("match-recursive");
 
 require('dotenv').config();
 
@@ -28,18 +29,17 @@ client.on('message', msg => {
             let rholang = msg.content.substring(8).replace(/[\r\n\t]/g, " ");
             var rholang2 = rholang.replace(/'/g, "'\"'\"'");
             console.log(rholang2);
-//	    var sed='sed -n "/Error: /p;s/.*@{\"result/ @{\"result/;s/ |.*//;/^ @/p"';
             dir = exec('set -x 2>&1;echo '+"'" + rholang2 + "'"+'  2>&1 >last.rho;echo '+"'"+'@"result" ! ('+ rholang2 + ")'| tee repl.in|rnode repl|tee repl.out",
-            //dir = exec('echo '+"'" + rholang2 + "'"+'  2>&1 >last.rho;echo '+"'"+'@"result" ! ('+ rholang2 + ")'| tee repl.in"+'|echo sed -n "/Error: /p;s/.*@{\"result/ @{\"result/;s/ |.*//;/^ @/p"',
-             //dir = exec('echo '+"'" + rholang2 + "'"+'  2>&1 >last.rho;echo '+"'"+'@"result" ! (' + rholang2 + ')|rnode repl 2>&1|tee repl.out|sed -n "/Error: /p;s/.*@{\"result/ @{\"result/;s/ |.*//;/^ @/p"',
                 function(err, stdout, stderr) {
                     if (err) {
                         // should have err.code here?
                     }
                     //console.log(stdout);
 		    var result = stdout.replace(/[\r\n\t]/g, " ");
-		    result = result.replace(/.*result/," @{\"result");
-		    result = result.replace(/ \|.*/,"");
+		    result = result.replace(/.*{"result"}!/,"");
+		    result = '{"result"}!'+matchRecursive(result,    "(...)");
+		    //result = result.replace(/.*result/," @{\"result");
+		    //result = result.replace(/ \|.*/,"");
                     console.log(result);
                     msg.reply(result + "\n (See the log: https://rhobot.net/rnode-log/");
                 }
