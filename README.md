@@ -1,3 +1,48 @@
+
+Sample dialog from this bot. Modify to make your own bot.
+
+```
+jimscarverToday at 2:46 PM
+rholang!
+RHO-botBOTToday at 2:46 PM
+@jimscarver, RHOlang is the language of RChain. Run a rholang program by typing:
+rholang: <your program>
+jimscarverToday at 2:47 PM
+rholang: 
+new HelloWorld in {
+  contract HelloWorld(return) = {
+    return!("Hello, World!")
+  } |
+  new myChannel in {
+    HelloWorld!(*myChannel)
+  }
+}
+RHO-botBOTToday at 2:47 PM
+@jimscarver,  @{"result"}!(new x0 in { for( x1 <= x0 ) { x1!("Hello, World!") }
+ (See the log: https://rhobot.net/rnode-log/
+jimscarverToday at 2:47 PM
+deploy:
+RHO-botBOTToday at 2:47 PM
+@jimscarver, 18:47:54.604 [main] INFO  c.r.n.configuration.Configuration$ - Starting with profile default
+Response: Success!
+ (See the log: https://rhobot.net/rnode-log/
+jimscarverToday at 2:48 PM
+propose:
+RHO-botBOTToday at 2:48 PM
+@jimscarver, 18:48:25.814 [main] INFO  c.r.n.configuration.Configuration$ - Starting with profile default
+Response: Success! Block 6819ab4e2b... created and added.
+ (See the log: https://rhobot.net/rnode-log/
+jimscarverToday at 2:52 PM
+rholang developer wannabees are welcome here.
+RHO-botBOTToday at 2:52 PM
+@jimscarver, RHOlang is the language of the mobile asyncronous communicating process calculus.
+jimscarverToday at 2:56 PM
+rholang can be discussed here.
+RHO-botBOTToday at 2:56 PM
+@jimscarver, See the rholang tutorial at https://developer.rchain.coop/tutorial
+
+```
+
 Build a Discord Bot
 =========================
 
