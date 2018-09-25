@@ -11,6 +11,25 @@ const {RNode, RHOCore, logged} = require('rchain-api');
 
 let myNode;
 
+const Tail = require('tail').Tail;
+ 
+const tail = new Tail("/home/rchain/rnode.log");
+ 
+var currentMessage;
+tail.on("line", function(data) {
+  if ( data.match(/^@|^Syntax Error/)) {
+     console.log("log: "+data);
+     if ( currentMessage ) {
+	currentMessage.reply(data);
+     }
+  }
+});
+tail.unwatch()
+ 
+tail.on("error", function(error) {
+  console.log('ERROR: ', error);
+});
+
 // 'client.on('message')' commands are triggered when the
 // specified message is read in a text channel that the bot is in.
 
@@ -27,6 +46,7 @@ client.on('message', msg => {
 });
 client.on('message', msg => {
     //console.log(msg.author);
+        currentMessage = msg;
         console.log(msg.content);
     let content = msg.content;
     if (content.match(/^```rholang.*/)) {
@@ -87,6 +107,7 @@ console.log("matched!");
 	}
     }
     if (msg.content.match(/^eval:/i)) {
+        tail.watch()
         const author = msg.author.username;
         console.log(msg.content);
         let rholang =  msg.content.substring(5);
@@ -98,10 +119,12 @@ console.log("matched!");
          console.log("The file was saved!");
          dir = exec(" rnode eval /tmp/"+author+".rho", function(err, stdout, stderr) {
            if ( ! err ) {
-		msg.reply(stdout.substring(0,500)+"\n...\n"+stdout.substring(stdout.length-500));
+	//	msg.reply(stdout.substring(0,500)+"\n...\n"+stdout.substring(stdout.length-500));
+       //      msg.reply("success");
            } else {
                 msg.reply(stderr);
            }
+           tail.unwatch();
         });
       });
     }
@@ -140,18 +163,19 @@ client.on('guildMemberAdd', member => {
 	"It’s nice to meet you.",
 	"It’s a pleasure to meet you.",
 	"Hi!" ,
-	"How are things ?",
+	"How are things?",
 	"What’s new?",
 	"It’s good to see you." ,
 	"G’day!" ,
 	"Howdy!" ,
 	"Welcome to the server"
       ];
-      var  message = messages[Math.floor(Math.random() * messages.length()-1)];
-
+      var  message = messages[Math.floor(Math.random() * messages.length-1)];
+console.log(`New member ${member} ${message}`);
     // Send the message, mentioning the member
-    channel.send(`${message}. ${member}. Welocome to the cooperation laboratory.`);
+    channel.send(`${message}. ${member}. Welcome to the cooperation laboratory.`);
 });
+
 client.login(process.env.TOKEN);
 
 //fs.writeFile(""+author+".rho", rholang, function(err) {
