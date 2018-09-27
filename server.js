@@ -50,8 +50,10 @@ client.on('message', msg => {
         console.log(msg.content);
     let content = msg.content;
     if (content.match(/^```rholang.*/)) {
-console.log("matched!");
        content = "rholang:"+content.substring(10,content.length-4)
+    }
+    if (content.match(/^```eval.*/)) {
+       content = "eval:"+content.substring(7,content.length-4)
     }
     if (!msg.author.bot && content.match(/^rholang/i)) {
         let dir;
@@ -106,11 +108,12 @@ console.log("matched!");
             msg.reply(answers[n]);
 	}
     }
-    if (msg.content.match(/^eval:/i)) {
-        tail.watch()
+    if (content.match(/^eval:/i)) {
+        msg.reply("Evaluating...");
+        tail.watch(); // turn on reporting log output as msg.reply
         const author = msg.author.username;
         console.log(msg.content);
-        let rholang =  msg.content.substring(5);
+        let rholang =  content.substring(5);
 	fs.writeFile("/tmp/"+author+".rho", rholang, function(err) {
          if(err) {
           return console.log(err);
@@ -163,14 +166,14 @@ client.on('guildMemberAdd', member => {
 	"It’s nice to meet you.",
 	"It’s a pleasure to meet you.",
 	"Hi!" ,
-	"How are things?",
+	"Welcome! How might we cooperat",
 	"What’s new?",
 	"It’s good to see you." ,
 	"G’day!" ,
 	"Howdy!" ,
 	"Welcome to the server"
       ];
-      var  message = messages[Math.floor(Math.random() * messages.length-1)];
+      var  message = messages[Math.floor(Math.random() * messages.length)];
 console.log(`New member ${member} ${message}`);
     // Send the message, mentioning the member
     channel.send(`${message}. ${member}. Welcome to the cooperation laboratory.`);
