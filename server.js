@@ -17,7 +17,7 @@ const tail = new Tail("/home/rchain/rnode.log");
  
 var currentMessage;
 tail.on("line", function(data) {
-  if ( data.match(/^@|^Syntax Error/)) {
+  if ( data.match(/^@|^\(|^"|^[0-9.][0-9.]*$|^\[|^Syntax Error/)) {
      console.log("log: "+data);
      if ( currentMessage ) {
 	currentMessage.reply(data);
@@ -109,7 +109,7 @@ client.on('message', msg => {
 	}
     }
     if (content.match(/^eval:/i)) {
-        msg.reply("Evaluating...");
+        // msg.reply("Evaluating...");
         tail.watch(); // turn on reporting log output as msg.reply
         const author = msg.author.username;
         console.log(msg.content);
@@ -120,10 +120,12 @@ client.on('message', msg => {
          }
 
          console.log("The file was saved!");
-         dir = exec(" rnode eval /tmp/"+author+".rho", function(err, stdout, stderr) {
+         dir = exec(" rnode eval /tmp/"+author+".rho|sed '1,3d;s/Deployment cost: //;/^Storage Contents:/{x;q}'", 
+         //dir = exec(" rnode eval /tmp/"+author+".rho|sed '2,3d;/^Storage Contents:/{x;q}'", 
+           function(err, stdout, stderr) {
            if ( ! err ) {
 	//	msg.reply(stdout.substring(0,500)+"\n...\n"+stdout.substring(stdout.length-500));
-       //      msg.reply("success");
+             msg.reply(stdout.substring(0,stdout.length-0));
            } else {
                 msg.reply(stderr);
            }
@@ -135,7 +137,7 @@ client.on('message', msg => {
         const author = msg.author.username;
         console.log(msg.content);
         let rholang = msg.content.substring(8);
-        dir = exec(" rnode deploy --from \"0x1\" --phlo-limit 0 --phlo-price 0 --nonce 0 /tmp/"+author+".rho", 
+        dir = exec(" rnode deploy --from \"0x1\" --phlo-limit 100000000 --phlo-price 1 --nonce 0 /tmp/"+author+".rho", 
           function(err, stdout, stderr) {
             if (err) {
                 msg.reply(stderr);
@@ -154,6 +156,11 @@ client.on('message', msg => {
             console.log(stdout);
             msg.reply(stdout + " (See the log: https://rhobot.net/rnode-log)");
         });
+    }
+    if (msg.content.match(/^who am i\?/i)) {
+        //var deployData = {term: ,
+	//                  timestamp: new Date().valueOf()};
+        msg.reply(`HELLO ${msg.author.username} id = ${msg.author.id}`);
     }
 });
 client.on('guildMemberAdd', member => {
