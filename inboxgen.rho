@@ -1,0 +1,46 @@
+#
+new $stdout, Inbox in {
+contract Inbox(capabilities) = {
+  new read, write, peek, box in {
+    capabilities!(*read, *write, *peek) |
+    box!(Nil) |
+    contract read(pattern,ret) = {
+      stdout!(["pattern",*pattern]) |
+      for (items <- box) {
+        match (*items) {
+          { {item} /\ {=*pattern} | rest} => {
+            stdout!(item) |
+            ret!(item) |
+            box!(rest)
+          }
+          _ => {box!(*items) | ret!(Nil)}
+        }
+      }
+    } |
+    contract write(message,ret) = {
+      for (items <- box) {
+       stdout!([*message, *items]) |
+       box!(*items | *message)|
+       ret|(Nil)
+      }
+    }
+  }
+} |
+new capabilities, ack, message in {
+  Inbox!(*capabilities) |
+  for (receive, send, peek <- capabilities) {
+    stdout!("received capabilities") |
+    send!(["chat","hello world"], *ack) |
+    send!(["chat",$myusername ++ ": Watson come quickly!"], *ack) |
+    for ( _ <- ack; _ <- ack) {
+      receive!(["chat", ...], *message) |
+      for ( text <- message ) {
+        stdout!(*text)
+      } |
+      receive!(["chat", ...], *message) |
+      for ( text <- message ) {
+        stdout!(*text)
+      }
+    }
+  }
+}}

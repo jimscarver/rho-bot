@@ -1,0 +1,19 @@
+new inboxCh, capabilities, ret, $stdout, $lookup, $insertArbitrary in {
+  lookup!($Inbox, *inboxCh) |
+  for (inbox <- inboxCh) {
+    inbox!(*capabilities) |
+    for (receive, send, peek <- capabilities) {
+      lookup!($locker_%%$myusername, *ret) |   
+      for (locker <- ret) {
+        stdout!(["#define $locker_nonce_" ++ $myusername, $locker_nonce_%%$myusername + 1]) | 
+        locker!("update", $myprivkey.hexToBytes(),$locker_nonce_%%$myusername, {"inbox": *send, "receive": *receive, "peek": *peek}, *stdout, *ret) |
+        for (_ <- ret) {      
+          insertArbitrary!(*send,*ret)|
+          for (uri <- ret) {
+            stdout!(["#define $inbox_" ++ $myusername, *uri])
+          }
+        }
+      }   
+    }
+  }
+}

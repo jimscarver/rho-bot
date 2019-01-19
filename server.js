@@ -17,10 +17,17 @@ const tail = new Tail("/home/rchain/rnode.log");
  
 var currentMessage;
 tail.on("line", function(data) {
-  if ( data.match(/^@|^\(|^"|^[0-9.][0-9.]*$|^\[|^Syntax Error/)) {
+  if ( data.match(/^bundle|^@|^\(|^"|^[0-9.][0-9.]*$|^\[|^\{|^\(|^`|^Syntax Error/)) {
      console.log("log: "+data);
      if ( currentMessage ) {
 	currentMessage.reply(data);
+       if ( data.match(/\[\"#define /) ) {
+       //if ( data.match(/^\["#define /) ) {
+	  var matches = data.match(/(#define[^"]*)", (.*)\]/);
+	  //currentMessage.reply(matches[1]+' '+matches[2]);
+	  exec( "echo '"+matches[1]+' '+matches[2]+"' >>global.h");
+	  //console.log("define:"+data.match(/^(#define[^"]*)", (.*)\]/));
+       }
      }
   }
 });
@@ -54,6 +61,9 @@ client.on('message', msg => {
     }
     if (content.match(/^```eval.*/)) {
        content = "eval:"+content.substring(7,content.length-4)
+    }
+    if (content.match(/^```.*/)) {
+       content = content.substring(/\r|\n/.exec(content).index+1,content.length-4)
     }
     if (!msg.author.bot && content.match(/^rholang/i)) {
         let dir;
@@ -102,25 +112,73 @@ client.on('message', msg => {
 
         } else {
 	    var n = Math.floor(Math.random() * 3);
-            var answers = ["RHOlang is the language of RChain. Run a rholang program by typing:\nrholang: <your program>",
+            var answers = ["RHOlang is the language of RChain. Run a rholang program by typing:\neval: <your program>",
 		"RHOlang is the language of the mobile asyncronous communicating process calculus.",
 		"See the rholang tutorial at https://developer.rchain.coop/tutorial"];
             msg.reply(answers[n]);
 	}
     }
+    if (content.match(/^newuser:/i)) {
+        tail.watch(); // turn on reporting log output as msg.reply
+         dir = exec(" rnode eval newuser.rho|sed '1,3d;s/Deployment cost: //;/^Storage Contents:/{x;q}'", 
+         //dir = exec(" rnode eval /tmp/"+author+".rho|sed '2,3d;/^Storage Contents:/{x;q}'", 
+           function(err, stdout, stderr) {
+           if ( ! err ) {
+	//	msg.reply(stdout.substring(0,500)+"\n...\n"+stdout.substring(stdout.length-500));
+             msg.reply(stdout.substring(0,stdout.length-0));
+           } else {
+                msg.reply(stderr);
+           }
+           tail.unwatch();
+        });
+    }
+    if (content.match(/^define:/)) {
+      exec("echo '#define "+content.substring(7).replace(/(?:\r\n|\r|\n)/g, " ").replace("'","'\"'\"'")+"' >>global.h");
+      msg.reply("defined "+content.substring(7,(content+"\n").indexOf("\n")));
+    }
+
+    if (content.match(/^echo:/i)) {
+         let rholang = "" +
+           "echo '"+content.substring(5).replace("'","'\"'\"'")+"'|"+
+           "cat global.h end.h - |cpp 2>/dev/null|"+
+           "sed -n '/^#/d;/^_end_$/,$p'|tail +2|clang-format|"+
+           "perl -0777 -pe 's/\\n[ \\t]*-/-/igs;s/<\\w-/<- /g;s/\\n[ \\t]*:/:/igs;"+
+           "s/ :/:/g;s/rho: ([a-zA-Z0-9]*:) /rho:\\1/g;s/ :/:/g;s/ !/!/g;"+
+             "s/ \\+\\+/ \+\+ /g;s/ \\% \\% \"([^\"]*)\"/\\1/g'|tee lastecho";
+         console.log(rholang)
+         exec(rholang,
+           function(err, stdout, stderr) {
+           if ( ! err ) {
+             msg.reply("```scala\n"+stdout+"\n```");
+           } else {
+                msg.reply("error:"+stderr);
+           }
+           })
+    }
+
     if (content.match(/^eval:/i)) {
-        // msg.reply("Evaluating...");
         tail.watch(); // turn on reporting log output as msg.reply
         const author = msg.author.username;
-        console.log(msg.content);
-        let rholang =  content.substring(5);
-	fs.writeFile("/tmp/"+author+".rho", rholang, function(err) {
+         let rholang = '#define $myprivkey "'+msg.author.id.substring(10)+"\"\n"+
+	   '#define $mypubkey "dead'+msg.author.id.substring(10)+"\"\n"+
+	   '#define $myusername "'+msg.author.username.replace(" ","_")+"\"\n"+
+	   content.substring(5)+"\n";
+        console.log(rholang);
+        //let rholang =  content.substring(5);
+	fs.writeFile("/tmp/"+author+".rhox", rholang, function(err) {
          if(err) {
           return console.log(err);
          }
 
          console.log("The file was saved!");
-         dir = exec(" rnode eval /tmp/"+author+".rho|sed '1,3d;s/Deployment cost: //;/^Storage Contents:/{x;q}'", 
+         let bash = "cat global.h '/tmp/"+author+".rhox' |cpp 2>cpperrors|"+
+           "sed 's/\\%\\%\"\\([^\"]*\\)\"/\\1/g'|"+
+           "cat global.h end.h -|cpp 2>cpperrors2|sed -n '/^#/d;/^_end_$/,$p'|tee lasteval|"+
+           "tail +2 >'/tmp/"+author+".rho';"+
+           "rnode eval '/tmp/"+author+".rho'|"+
+           "sed '1,3d;s/Deployment cost: //;/^Storage Contents:/{x;q}'";
+         console.log(bash);
+         dir = exec(bash,
          //dir = exec(" rnode eval /tmp/"+author+".rho|sed '2,3d;/^Storage Contents:/{x;q}'", 
            function(err, stdout, stderr) {
            if ( ! err ) {

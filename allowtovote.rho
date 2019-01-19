@@ -1,0 +1,15 @@
+#define $user "dummyuser"
+#define $ballot "flavors"
+new inboxCh, lockerCh, itemsCh, voteCh, 
+lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in { 
+  lookup!($locker_%%$myusername, *lockerCh) | 
+  for(locker <- lockerCh) { 
+    locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) | 
+    stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) |
+    for (@{$ballot: ballot, ..._} <- itemsCh) { 
+      @{ballot.get("chair")}!("giveRightToVote", *voteCh) | 
+        for (vote <- voteCh) { lookup!($inbox_%%$user, *inboxCh) | 
+          for(inbox <- inboxCh) { 
+          inbox!(["vote",$ballot,*vote]) | 
+          stdout!({"sending right to vote to": $user})
+ } } } } }
