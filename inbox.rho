@@ -35,7 +35,41 @@ contract Inbox(capabilities) = {
           _ => {
             box!(*items)|ret!(Nil) | stdout!([*type, *subtype, "not found"])
           }
+        }
+      }
+    } |
 
+    contract peek(ret) = {
+      for (items <- box) {
+        ret!(*items) |
+        box!(*items)
+      }
+    } |
+    contract peek(type,ret) = {
+      //stdout!(["type",*type]) |
+      for (items <- box) {
+        match (*items) {
+          {[=*type, ...item] | rest} => {
+            //stdout!(item) |
+            ret!(item) |
+            box!(*items)
+          }
+          _ => {box!(*items) | ret!(Nil) | stdout!([*type,"not found"])}
+        }
+      }
+    } |
+    contract peek(type,subtype,ret) = {
+      //stdout!(["type",*type]) |
+      for (items <- box) {
+        match (*items) {
+          {[=*type, =*subtype, ...item] | rest} => {
+            //stdout!(item) |
+            ret!(item) |
+            box!(*items)
+          }
+          _ => {
+            box!(*items)|ret!(Nil) | stdout!([*type, *subtype, "not found"])
+          }
         }
       }
     } |

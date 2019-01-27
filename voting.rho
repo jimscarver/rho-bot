@@ -7,7 +7,7 @@ insertArbitrary(`rho:registry:insertArbitrary`)
 in {
   new uriCh in {
     insertArbitrary!(*Ballot, *uriCh) | for(@uri <- uriCh) {
-      stdout!({"Ballot is registerd at": uri})
+      stdout!(["#define $Ballot", uri])
     }
   }
   |
@@ -30,14 +30,16 @@ in {
           }|
 
           contract voter(@"vote", @proposal, eject, ack) = {
-            // trace!({"voter": *voter, "for": proposal}) |
+             trace!({"voter": *voter, "for": proposal}) |
             if(proposalNames.contains(proposal) == false) { eject!({"unknown proposal": proposal}) }
             else {
+              trace!("valid proposal") |
               for (@votedFor <- votedCh) {
                 if (votedFor.contains(bundle0{*voter})) {
                   votedCh!(votedFor) |
                   eject!("already voted")
                 } else {
+                  trace!("allowed to vote") |
                   for(@count <- countCh; @voterWeight <- voterWeightCh) {
                     trace!({"voter": *voter, "weight": voterWeight.get(bundle0{*voter}),
                       "proposal": proposal}) |

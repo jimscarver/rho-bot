@@ -17,7 +17,7 @@ const tail = new Tail("/home/rchain/rnode.log");
  
 var currentMessage;
 tail.on("line", function(data) {
-  if ( data.match(/^bundle|^@|^\(|^"|^[0-9.][0-9.]*$|^\[|^\{|^\(|^`|^Syntax Error/)) {
+  if ( data.match(/^bundle|^@|^Nil$|^\(|^"|^[0-9.][0-9.]*$|^\[|^\{|^\(|^`|^Syntax Error/)) {
      console.log("log: "+data);
      if ( currentMessage ) {
 	currentMessage.reply(data);

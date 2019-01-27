@@ -8,8 +8,9 @@ lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {
     stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) |
     for (@{$ballot: ballot, ..._} <- itemsCh) { 
       @{ballot.get("chair")}!("giveRightToVote", *voteCh) | 
-        for (vote <- voteCh) { lookup!($inbox_%%$user, *inboxCh) | 
+        for (vote <- voteCh) { 
+          lookup!($inbox_%%$user, *inboxCh) | 
           for(inbox <- inboxCh) { 
-          inbox!(["vote",$ballot,*vote]) | 
+          inbox!(["vote",$ballot,*vote],*stdout) | 
           stdout!({"sending right to vote to": $user})
  } } } } }

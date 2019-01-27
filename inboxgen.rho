@@ -1,5 +1,4 @@
-#
-new $stdout, Inbox in {
+new stdout(`rho:io:stdout`), Inbox in {
 contract Inbox(capabilities) = {
   new read, write, peek, box in {
     capabilities!(*read, *write, *peek) |
@@ -21,7 +20,7 @@ contract Inbox(capabilities) = {
       for (items <- box) {
        stdout!([*message, *items]) |
        box!(*items | *message)|
-       ret|(Nil)
+       ret!(Nil)
       }
     }
   }
@@ -31,13 +30,13 @@ new capabilities, ack, message in {
   for (receive, send, peek <- capabilities) {
     stdout!("received capabilities") |
     send!(["chat","hello world"], *ack) |
-    send!(["chat",$myusername ++ ": Watson come quickly!"], *ack) |
+    send!(["chat","jimscarver" ++ ": Watson come quickly!"], *ack) |
     for ( _ <- ack; _ <- ack) {
-      receive!(["chat", ...], *message) |
+      receive!(@["chat", ...]|, *message) |
       for ( text <- message ) {
         stdout!(*text)
       } |
-      receive!(["chat", ...], *message) |
+      receive!({["chat", ...]}, *message) |
       for ( text <- message ) {
         stdout!(*text)
       }
