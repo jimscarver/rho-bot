@@ -1,0 +1,14 @@
+#define $type "vote"
+#define $subtype "rho"
+#define $return stdout
+new lockerCh, itemsCh, $stdout, $lookup in { 
+  lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) { 
+    locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) | 
+    for (@items  <- itemsCh) { 
+      if ( items.get("receive") == Nil ) {
+        stdout!("you do not have a receive channel for your inbox")
+      } else {
+        @{items.get("receive")}!($type, $subtype, *$return)
+      } |
+      stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])
+} } }
