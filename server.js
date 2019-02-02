@@ -52,10 +52,12 @@ client.on('message', msg => {
     }
 });
 client.on('message', msg => {
-    //console.log(msg.author);
-        currentMessage = msg;
-        console.log(msg.content);
-    let content = msg.content;
+  currentMessage = msg;
+  console.log(meg.author.username+": "+msg.content);
+  let content = msg.content;
+  var repeat = true;
+  while (repeat) {
+    var repeat = false;
     if (content.match(/^```rholang.*/)) {
        content = "rholang:"+content.substring(10,content.length-4)
     }
@@ -68,7 +70,6 @@ client.on('message', msg => {
     if (!msg.author.bot && content.match(/^rholang/i)) {
         let dir;
 	const randid = Math.random().toString().substring(2);
-        console.log(msg.content);
 	var auxmsg = "";
         if (content.match(/^rholang:/i)) {
             console.log(content);
@@ -118,13 +119,11 @@ client.on('message', msg => {
             msg.reply(answers[n]);
 	}
     }
-    if (content.match(/^newuser:/i)) {
+    else if (content.match(/^newuser:/i)) {
         tail.watch(); // turn on reporting log output as msg.reply
          dir = exec(" rnode eval newuser.rho|sed '1,3d;s/Deployment cost: //;/^Storage Contents:/{x;q}'", 
-         //dir = exec(" rnode eval /tmp/"+author+".rho|sed '2,3d;/^Storage Contents:/{x;q}'", 
            function(err, stdout, stderr) {
            if ( ! err ) {
-	//	msg.reply(stdout.substring(0,500)+"\n...\n"+stdout.substring(stdout.length-500));
              msg.reply(stdout.substring(0,stdout.length-0));
            } else {
                 msg.reply(stderr);
@@ -132,12 +131,12 @@ client.on('message', msg => {
            tail.unwatch();
         });
     }
-    if (content.match(/^define:/)) {
+    else if (content.match(/^define:/)) {
       exec("echo '#define "+content.substring(7).replace(/(?:\r\n|\r|\n)/g, " ").replace("'","'\"'\"'")+"' >>global.h");
       msg.reply("defined "+content.substring(7,(content+"\n").indexOf("\n")));
     }
 
-    if (content.match(/^echo:/i)) {
+    else if (content.match(/^echo:/i)) {
          let rholang = "" +
            "echo '"+content.substring(5).replace("'","'\"'\"'")+"'|"+
            "cat global.h end.h - |cpp 2>/dev/null|"+
@@ -156,7 +155,7 @@ client.on('message', msg => {
            })
     }
 
-    if (content.match(/^eval:/i)) {
+    else if (content.match(/^eval:/i)) {
         tail.watch(); // turn on reporting log output as msg.reply
         const author = msg.author.username;
          let rholang = '#define $myprivkey "'+msg.author.id.substring(10)+"\"\n"+
@@ -191,10 +190,9 @@ client.on('message', msg => {
         });
       });
     }
-    if (msg.content.match(/^deploy:/i)) {
+    else if (content.match(/^deploy:/i)) {
         const author = msg.author.username;
-        console.log(msg.content);
-        let rholang = msg.content.substring(8);
+        let rholang = content.substring(8);
         dir = exec(" rnode deploy --from \"0x1\" --phlo-limit 100000000 --phlo-price 1 --nonce 0 /tmp/"+author+".rho", 
           function(err, stdout, stderr) {
             if (err) {
@@ -205,8 +203,8 @@ client.on('message', msg => {
             msg.reply(stdout + " (See the log: https://rhobot.net/rnode-log)");
         });
     }
-    if (msg.content.match(/^propose:/i)) {
-        console.log(msg.content);
+    else if (content.match(/^propose:/i)) {
+        console.log(content);
         dir = exec("rnode propose", function(err, stdout, stderr) {
             if (err) {
                 // should have err.code here?
@@ -215,11 +213,17 @@ client.on('message', msg => {
             msg.reply(stdout + " (See the log: https://rhobot.net/rnode-log)");
         });
     }
-    if (msg.content.match(/^who am i\?/i)) {
+    else if (content.match(/^who am i\?/i)) {
         //var deployData = {term: ,
 	//                  timestamp: new Date().valueOf()};
         msg.reply(`HELLO ${msg.author.username} id = ${msg.author.id}`);
     }
+    else if (content.match(/^[a-zA-Z0-9_-]*:/)) {
+      const matches = content.match(/(^[^:]*): (.*)/);
+      content = "eval: $"+matches[1]+'('+matches[2]+')';
+      repeat = true;
+    }
+  }
 });
 client.on('guildMemberAdd', member => {
     // Send the message to a designated channel on a server:

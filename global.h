@@ -109,3 +109,6 @@
 #define $locker_nonce_jimscarver 79
 #define $locker_nonce_jimscarver 80
 #define $locker_nonce_jimscarver 81
+#define $locker_nonce_jimscarver 82
+#define $locker_nonce_jimscarver 83
+#define $locker_nonce_jimscarver 84
