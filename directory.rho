@@ -1,0 +1,53 @@
+new directory in {
+  contract directory(capabilities) = {
+    new mapCh, read, write in {
+     mapCh!({}) |
+     capabilities!(bundle+{*read},bundle+{*write}) |
+     contract read(return) = {
+       for ( map <- mapCh ) {
+         mapCh!(*map) |
+         return!(*map)
+       }
+      } |
+     contract read(@key, return) = {
+       for ( map <- mapCh ) {
+         mapCh!(*map) |
+         return!(*map.get(key))
+       }
+      } |
+      contract write(@key,@value, ret) = {
+        for ( map <- mapCh ) {
+          if ( value == Nil ) {
+            mapCh!(*map.delete(key)) |
+            ret!([key,"deleted"])
+          } else {
+            mapCh!(*map.set(key,value)) |
+            ret!([key,value,"added"])
+          }
+        }
+     }
+   }
+  } |
+  new $stdout, $lookup, $insertArbitrary, uriCh, read, write, ret in {
+    insertArbitrary!(bundle+{*directory},*uriCh) |
+    for (uri <- uriCh ) {
+      stdout!(["#define $Directory",*uri])
+    } |
+    directory!(*ret) |
+    for ( read, write <- ret ) {
+      write!("hello","world", *ret) |
+      write!("this","that", *ret) |
+      for( _ <- ret; _ <- ret ) {
+        read!(*ret) |
+        for ( amap <- ret ) {
+          stdout!(*amap) |
+          write!("this",Nil, *ret) | /* delete a key */
+          for ( _ <- ret ) {
+            read!("hello",*stdout) |
+            read!(*stdout)
+          }
+        }
+      }
+    }
+  }
+}

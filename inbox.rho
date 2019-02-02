@@ -1,7 +1,7 @@
 new $stdout, Inbox in {
 contract Inbox(capabilities) = {
   new read, write, peek, box in {
-    capabilities!(*read, *write, *peek) |
+    capabilities!(bundle+{*read}, bundle+{*write}, bundle+{*peek}) |
     box!(Nil) |
 
     contract read(ret) = {

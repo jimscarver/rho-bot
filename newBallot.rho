@@ -1,0 +1,16 @@
+#define $name color
+#define $choiceSet Set("red","green","blue")
+new lookupCh, bCh, Ballot, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`), lockerCh, ackCh
+in {
+  lookup!($Ballot, *lookupCh) |
+  for(Ballot <- lookupCh) {
+    Ballot!($choiceSet, *bCh) |
+    for (chair, getWinner <- bCh) {
+      lookup!($locker_%%$myusername, *lockerCh) |
+      for(locker <- lockerCh) {
+        locker!("update", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, {$name: {"chair": *chair, "getWinner": *getWinner}}, *stdout, *ackCh) |
+        stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])
+      }
+    }
+  }
+}

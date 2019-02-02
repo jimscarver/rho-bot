@@ -1,0 +1,21 @@
+#define $name "testdir"
+#define $user "dummyuser"
+new ret, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {
+  lookup!($locker_%%$myusername, *ret) | for(locker <- ret) {
+    locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *ret) |
+    for (@items  <- ret) {
+      if ( items.get("peek") == Nil ) {
+        stdout!("you do not have an mailbox")
+      } else {
+        lookup!($inbox_%%$user,*ret) |
+        for( inbox <- ret ) {
+          stdout!("finding" ++ $name ++ " in inbox of " ++ $myusername) |
+          @{items.get("peek")}!(*stdout) |
+          @{items.get("peek")}!("directoryAdmin", $name,*ret) |
+          for ( @[*read, *write] <- ret ) {
+            stdout!("sending capabilities to " ++ $user) |
+            inbox!(["directoryAdmin", $name, (*read, *write)], *stdout)
+          }
+        } |
+      stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])
+} } } }

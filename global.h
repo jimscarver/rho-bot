@@ -87,3 +87,15 @@
 #define $locker_nonce_jimscarver 67
 #define $locker_nonce_jimscarver 68
 #define $locker_nonce_jimscarver 69
+#define $locker_nonce_aviation_hacker 2
+#define $inbox_aviation_hacker `rho:id:rddpw8d9neb1t7sfufsbunt4f5qwp68n6zmr1ax4hesh5rid5wpq6u`
+#define $locker_nonce_jimscarver 70
+#define $locker_nonce_Owans 4
+#define $locker_nonce_jimscarver 71
+#define $Directory `rho:id:dfcwyxpjcyfmk3u9db4u5xwr6z65y9qqiz46y9rmi7gpmpsmw1kxnz`
+#define $locker_nonce_jimscarver 72
+#define $locker_nonce_jimscarver 73
+#define $locker_nonce_jimscarver 74
+#define  $newDirectory($name) new ret, uriCh, itemsCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *uriCh) | for(locker <- uriCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     for (@items  <- itemsCh) {       if ( items.get("inbox") == Nil ) {         stdout!("you do not have an inbox")       } else {         lookup!($Directory,*uriCh) |         for( Dir <- uriCh ) {           Dir!(*ret) |           for ( read, write <- ret )  {            @{items.get("inbox")}!(["directoryAdmin", $name,( *read, *write)],*stdout) |            stdout!( $name ++ " created")          } }         }       } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) } }
+#define $locker_nonce_jimscarver 75
+#define $locker_nonce_jimscarver 76
