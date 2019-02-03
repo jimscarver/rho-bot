@@ -53,11 +53,12 @@ client.on('message', msg => {
 });
 client.on('message', msg => {
   currentMessage = msg;
-  console.log(meg.author.username+": "+msg.content);
+  console.log(msg.author.username+": "+msg.content);
   let content = msg.content;
   var repeat = true;
-  while (repeat) {
-    var repeat = false;
+  var retry = 0;
+  while (repeat && retry < 2) {
+    repeat = false;
     if (content.match(/^```rholang.*/)) {
        content = "rholang:"+content.substring(10,content.length-4)
     }
@@ -132,18 +133,41 @@ client.on('message', msg => {
         });
     }
     else if (content.match(/^define:/)) {
-      exec("echo '#define "+content.substring(7).replace(/(?:\r\n|\r|\n)/g, " ").replace("'","'\"'\"'")+"' >>global.h");
-      msg.reply("defined "+content.substring(7,(content+"\n").indexOf("\n")));
+      if (! content.match(/^define:\s*\$/) ) {
+        msg.reply("error: start macro names with a dollar sign $");
+      } else {
+        exec("echo '#define "+content.substring(7).replace(/(?:\r\n|\r|\n)/g, " ").replace("'","'\"'\"'")+"' >>global.h");
+        msg.reply("defined "+content.substring(7,(content+"\n").indexOf("\n")));
+      }
     }
 
+    else if (content.match(/^find:/i)) {
+         let search = content.substring(6);
+         console.log("search "+search);
+         if (search.match(/^$/))
+           search = ".*";
+         let command = "" +
+           "sed -n 's/^#define  *//;s/, /,/g;s/( /(/g;s/ )/)/g;s/ .*//;"+
+           "/locker_nonce/d;/"+search+"/Ip' global.h|sort -u";
+         console.log(command)
+         exec(command,
+           function(err, stdout, stderr) {
+           if ( ! err ) {
+             msg.reply(stdout.substring(0,1900));
+           } else {
+                msg.reply("error:"+stderr);
+           }
+           })
+    }
     else if (content.match(/^echo:/i)) {
          let rholang = "" +
            "echo '"+content.substring(5).replace("'","'\"'\"'")+"'|"+
-           "cat global.h end.h - |cpp 2>/dev/null|"+
+           "cat global.h end.h - |cpp 2>/tmp/cpp-error|"+
            "sed -n '/^#/d;/^_end_$/,$p'|tail +2|clang-format|"+
            "perl -0777 -pe 's/\\n[ \\t]*-/-/igs;s/<\\w-/<- /g;s/\\n[ \\t]*:/:/igs;"+
            "s/ :/:/g;s/rho: ([a-zA-Z0-9]*:) /rho:\\1/g;s/ :/:/g;s/ !/!/g;"+
-             "s/ \\+\\+/ \+\+ /g;s/ \\% \\% \"([^\"]*)\"/\\1/g'|tee lastecho";
+             "s/ \\+\\+/ \+\+ /g;s/ \\% \\% \"([^\"]*)\"/\\1/g;s/ < -/ <- /g;"+
+             "s/ \\% \\% /%%/g'|tee lastecho";
          console.log(rholang)
          exec(rholang,
            function(err, stdout, stderr) {
@@ -154,6 +178,7 @@ client.on('message', msg => {
            }
            })
     }
+
 
     else if (content.match(/^eval:/i)) {
         tail.watch(); // turn on reporting log output as msg.reply
@@ -218,10 +243,14 @@ client.on('message', msg => {
 	//                  timestamp: new Date().valueOf()};
         msg.reply(`HELLO ${msg.author.username} id = ${msg.author.id}`);
     }
-    else if (content.match(/^[a-zA-Z0-9_-]*:/)) {
+    else if (content.match(/^[a-zA-Z0-9_-]*:/) && !msg.author.bot) {
       const matches = content.match(/(^[^:]*): (.*)/);
-      content = "eval: $"+matches[1]+'('+matches[2]+')';
-      repeat = true;
+      if (matches) {
+        content = "eval: $"+matches[1]+'('+matches[2]+')';
+      } else {
+        content = "eval: $"+content.match(/(^[^:]*)/)[1];
+      }
+      repeat = true; retry = retry + 1;
     }
   }
 });

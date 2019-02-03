@@ -1,0 +1,33 @@
+#define $type "directory"
+#define $subtype "testdir"
+#define $return stdout
+new lockerCh, itemsCh, $stdout, $lookup in { 
+  lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) { 
+    locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) | 
+    for (@items  <- itemsCh) { 
+      if ( items.get("peek") == Nil ) {
+        stdout!("you do not have a peek channel for your inbox")
+      } else {
+        @{items.get("peek")}!(*$return)
+        /* @{items.get("peek")}!($type, $subtype, *$return) */
+      } |
+      stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])
+} } }
+
+
+/*
+```scala
+define: $peek($types_return...)
+new lockerCh, itemsCh, $stdout, $lookup in {
+  lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) {
+    locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |
+    for (@items  <- itemsCh) {
+      if ( items.get("peek") == Nil ) {
+        stdout!("you do not have a peek channel for your inbox")
+      } else {
+        @{items.get("peek")}!($types_return)
+      } |
+      stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])
+} } }
+```
+*/

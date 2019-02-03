@@ -10,7 +10,7 @@ new ret, uriCh, itemsCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) 
         for( Dir <- uriCh ) {
           Dir!(*ret) |
           for ( read, write <- ret )  {
-           @{items.get("inbox")}!(["directoryAdmin", $name, *read, *write],*stdout) |
+           @{items.get("inbox")}!(["directory", $name, *read, *write],*stdout) |
            stdout!( $name ++ " created")
          } }
         }

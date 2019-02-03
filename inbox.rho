@@ -78,7 +78,7 @@ contract Inbox(capabilities) = {
       for (items <- box) {
        //stdout!([*message, *items]) |
        box!(*items | *message) |
-       ret!(Nil)
+       ret!("message sent.")
       }
     }
   }

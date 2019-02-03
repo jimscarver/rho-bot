@@ -25,90 +25,49 @@
 #define  $test_value "xyzzy"
 #define   $mylockerGet($ret) new $stdout, $lookup, nonce , lockerCh in {   lookup!($locker_%%$myusername, *lockerCh) |   for (locker <- lockerCh) {       locker!("get", $myprivkey.hexToBytes(),$locker_nonce_%%$myusername,  *stdout, *$ret) |      stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])    } }
 #define   $mylockerUpdate($key,$value) new $stdout, $lookup, nonce , lockerCh, ret in {   lookup!($locker_%%$myusername, *lockerCh) |   for (locker <- lockerCh) {       locker!("update", $myprivkey.hexToBytes(),$locker_nonce_%%$myusername, { $key: $value},  *stdout, *ret) |      stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])    } }
-#define $locker_nonce_aviation_hacker 1
-#define $inbox_aviation_hacker `rho:id:nmx9guxghysekqqnxszarz7ax7nadjy7jcss11xczgdjg96ax8c3rb`
 #define $locker_aviation_hacker `rho:id:ak1o8wnbsnwc7gacpymhiugauyb5azgsks7c49nkfzf9xf7eo44t8x`
 #define  $newBallot($name,$choiceSet) new lookupCh, bCh, Ballot, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`), lockerCh, ackCh in {   lookup!($Ballot, *lookupCh) |   for(Ballot <- lookupCh) {     Ballot!($choiceSet, *bCh) |     for (chair, getWinner <- bCh) {       lookup!($locker_%%$myusername, *lockerCh) |       for(locker <- lockerCh) {         locker!("update", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, {$name: {"chair": *chair, "getWinner": *getWinner}}, *stdout, *ackCh) |         stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])       }     }   } }
 #define $inbox_henleynatural `rho:id:n368ncyu3zchposasuiteqmwrpokn4yteybimg7oyf9d8ru885hsa6`
 #define $locker_henleynatural `rho:id:e9tqyxqpxojr39ijirg3xki1hg19z4pamtbgqyduucwbgk4mrsr4qr`
 #define $locker_nonce_henleynatural 2
 #define  $voteresults($name) new  lockerCh, itemsCh, wCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {    lookup!($locker_%%$myusername, *lockerCh) |    for(locker <- lockerCh) {      locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |      stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) |       for (@{$name: ballot, ..._} <- itemsCh) {         @{ballot.get("getWinner")}!(*wCh) | for (@(whom, tally) <- wCh) {           stdout!({"winner": whom, "tally": tally})  } } } }
-#define $locker_nonce_GaryC 1
-#define $inbox_GaryC `rho:id:68iayzhm7q37mf9isdikibye5py1qdo3m1fpcqbdb5setzzt93ayd9`
 #define $locker_GaryC `rho:id:wu1nxbkq1bbuwpcqzobck6h6zcm6yjmnjnneihc5fnzojsnd3tm8y4`
 #define $locker_Valentine `rho:id:9rj6x4ax1hatnw6z3jfrf7grwrrx5bkpxwcr34g87598yrwph4658e`
-#define $inbox_Valentine `rho:id:wizy5rbccxrpsppt8jegrqd8gecjrcrggfmjkehoeyf49by7647mm8`
-#define $locker_nonce_Valentine 2
 #define  $inbox_dummyuser `rho:id:ya687kjhwtyj877fedddh9jiac5ydfpcjycyfa16cduhrhmwc7n738`
 #define  $allowtovote($ballot,$vote) #define $ballot "flavors" new inboxCh, lockerCh, itemsCh, voteCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *lockerCh) |   for(locker <- lockerCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) |     for (@{$ballot: ballot, ..._} <- itemsCh) {       @{ballot.get("chair")}!("giveRightToVote", *voteCh) |         for (vote <- voteCh) { lookup!($inbox_%%$user, *inboxCh) |           for(inbox <- inboxCh) {           inbox!(["vote",$ballot,*vote]) |           stdout!({"sending right to vote to": $user})  } } } } }
 #define  #define $inbox_dummyuser `rho:id:ya687kjhwtyj877fedddh9jiac5ydfpcjycyfa16cduhrhmwc7n738` $allowtovote("dummyuser"."flavors") new inboxCh, lockerCh, itemsCh, voteCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *lockerCh) |   for(locker <- lockerCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) |     for (@{$ballot: ballot, ..._} <- itemsCh) {       @{ballot.get("chair")}!("giveRightToVote", *voteCh) |         for (vote <- voteCh) { lookup!($inbox_%%$user, *inboxCh) |           for(inbox <- inboxCh) {           inbox!(["vote",$ballot,*vote]) |           stdout!({"sending right to vote to": $user})  } } } } }
 #define  #define $inbox_dummyuser `rho:id:ya687kjhwtyj877fedddh9jiac5ydfpcjycyfa16cduhrhmwc7n738` $allowtovote($ballot,$user) new inboxCh, lockerCh, itemsCh, voteCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *lockerCh) |   for(locker <- lockerCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) |     for (@{$ballot: ballot, ..._} <- itemsCh) {       @{ballot.get("chair")}!("giveRightToVote", *voteCh) |         for (vote <- voteCh) { lookup!($inbox_%%$user, *inboxCh) |           for(inbox <- inboxCh) {           inbox!(["vote",$ballot,*vote]) |           stdout!({"sending right to vote to": $user})  } } } } }
 #define  #define $inbox_dummyuser `rho:id:ya687kjhwtyj877fedddh9jiac5ydfpcjycyfa16cduhrhmwc7n738` $allowtovote($user,$ballot) new inboxCh, lockerCh, itemsCh, voteCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *lockerCh) |   for(locker <- lockerCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) |     for (@{$ballot: ballot, ..._} <- itemsCh) {       @{ballot.get("chair")}!("giveRightToVote", *voteCh) |         for (vote <- voteCh) { lookup!($inbox_%%$user, *inboxCh) |           for(inbox <- inboxCh) {           inbox!(["vote",$ballot,*vote]) |           stdout!({"sending right to vote to": $user})  } } } } }
-#define  $Inbox `rho:id:nhnbxg4i3rip5d851iwrdc4wt9s4pij3p5sn8u7d1414fznwf7utrt`
 #define $locker_Owans `rho:id:tq6q9cf7ucyd5ys6pyce765meohstcr6antk1t9r319fk44xnsb3ou`
-#define $inbox_Owans `rho:id:m9g4jx55gjfsk8bfrbh9ydmuquixf9ec6eorupd1gbz4opsgq9jq7g`
-#define $locker_nonce_Owans 2
-#define   $Inbox `rho:id:nhnbxg4i3rip5d851iwrdc4wt9s4pij3p5sn8u7d1414fznwf7utrt`
 #define  $add($x,$y)  ($x + $y)
 #define  $newinbox new inboxCh, capabilities, ret, $stdout, $lookup, $insertArbitrary in {   lookup!($Inbox, *inboxCh) |   for (inbox <- inboxCh) {     inbox!(*capabilities) |     for (receive, send, peek <- capabilities) {       lookup!($locker_%%$myusername, *ret) |       for (locker <- ret) {         stdout!(["#define $locker_nonce_" ++ $myusername, $locker_nonce_%%$myusername + 1]) |         locker!("update", $myprivkey.hexToBytes(),$locker_nonce_%%$myusername, {"inbox": *send, "receive": *receive, "peek": *peek}, *stdout, *ret) |         for (_ <- ret) {           insertArbitrary!(*send,*ret)|           for (uri <- ret) {             stdout!(["#define $inbox_" ++ $myusername, *uri])           }         }       }     }   } }
-#define $inbox_jimscarver `rho:id:no1ft9ooyskpfgsmtbk1ai57o5ddax16zwsku63gdrk5ftqxbdaubt`
 #define  $allowtovote($user,$ballot) new inboxCh, lockerCh, itemsCh, voteCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *lockerCh) |   for(locker <- lockerCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) |     for (@{$ballot: ballot, ..._} <- itemsCh) {       @{ballot.get("chair")}!("giveRightToVote", *voteCh) |         for (vote <- voteCh) { lookup!($inbox_%%$user, *inboxCh) |           for(inbox <- inboxCh) {           inbox!(["vote",$ballot,*vote],*stdout) |           stdout!({"sending right to vote to": $user})  } } } } }
 #define $Ballot `rho:id:3qfh1fy7jwfcai7ceyorux4a18hzcn83n9xb6dramjf5gs7cw8fynf`
-#define $locker_nonce_jimscarver 49
-#define  $vote($ballot,$vote) new ret, lockerCh, itemsCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     for (@items  <- itemsCh) {       /* stdout!(["locker",items]) | */       if ( items.get("receive") == Nil ) {         stdout!("you do not have a receive channel for your inbox")       } else {         @{items.get("receive")}!(*stdout) |         stdout!("getting voter") |         @{items.get("receive")}!("vote", $ballot, *ret) |         for( voter  <- ret ) {           stdout!(["voter",*voter]) |           voter!("vote",$vote,*stdout,*stdout) |           stdout!(["vote",$ballot,$myusername,"received"])         }       } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) } } }
-#define $locker_nonce_jimscarver 50
-#define $locker_nonce_jimscarver 51
-#define  $vote($ballot,$vote) new ret, lockerCh, itemsCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     for (@items  <- itemsCh) {       /* stdout!(["locker",items]) | */       if ( items.get("receive") == Nil ) {         stdout!("you do not have a receive channel for your inbox")       } else {         @{items.get("receive")}!(*stdout) |         stdout!("getting voter") |         @{items.get("receive")}!("vote", $ballot, *ret) |         for( [voter]  <- ret ) {           stdout!(["voter",*voter]) |           voter!("vote",$vote,*stdout,*stdout) |           stdout!(["vote",$ballot,$myusername,"received"])         }       } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) } } }
-#define $locker_nonce_jimscarver 52
-#define  $vote($ballot,$vote) new ret, lockerCh, itemsCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     for (@items  <- itemsCh) {       /* stdout!(["locker",items]) | */       if ( items.get("receive") == Nil ) {         stdout!("you do not have a receive channel for your inbox")       } else {         @{items.get("receive")}!(*stdout) |         stdout!("getting voter") |         @{items.get("receive")}!("vote", $ballot, *ret) |         for( @{[voter]}  <- ret ) {           stdout!(["voter",voter]) |           @voter!("vote",$vote,*stdout,*stdout) |           stdout!(["vote",$ballot,$myusername,"received"])         }       } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) } } }
-#define $locker_nonce_jimscarver 53
-#define $locker_nonce_jimscarver 54
-#define $locker_nonce_jimscarver 55
 #define $Inbox `rho:id:ds397egbwqrtbznbs86pph8n55io6zgzf65snke1hkd339wu18k5s3`
-#define $locker_nonce_jimscarver 56
-#define $inbox_jimscarver `rho:id:zm5s17wmfdwgbauikxsx7gnra4ie87rtk6jkspg8mzb1mz9xbqshzi`
+#define $inbox_jimscarver `rho:id:g8pdqkafrjmnkd6tpuegjqwk4oyikr1tqopr55ugx9qxd6ocjijgw3`
 #define $locker_nonce_GaryC 2
 #define $inbox_GaryC `rho:id:ubfm79n1ocdeaa3fk3npojynymq616y1cm7f3qtfoz53od1wybgq97`
-#define $locker_nonce_Owans 3
 #define $inbox_Owans `rho:id:4pmx9gacsnrxprdaxkagm7ytk38xgcd9x9d6noium7ndjk64tdqkq3`
-#define $locker_nonce_jimscarver 57
-#define $locker_nonce_jimscarver 58
-#define $locker_nonce_jimscarver 59
-#define $locker_nonce_jimscarver 60
 #define $locker_nonce_Valentine 3
 #define $inbox_Valentine `rho:id:c1331esaa9p3465k43ffbx1gcak7bp3q4ghkpe4gak5s3j717ycm4d`
-#define $locker_nonce_jimscarver 61
-#define $locker_nonce_jimscarver 62
-#define  $vote($ballot,$vote) new ret, lockerCh, itemsCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     for (@items  <- itemsCh) {       if ( items.get("peek") == Nil ) {         stdout!("you do not have a peek channel for your inbox")       } else {         @{items.get("peek")}!(*stdout) |         stdout!("getting voter") |         @{items.get("peek")}!("vote", $ballot, *ret) |         for( @{[voter]}  <- ret ) {           @voter!("vote",$vote,*stdout,*stdout) |           stdout!(["vote",$ballot,$myusername,"received"])         }       } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) } } }
-#define $locker_nonce_jimscarver 63
-#define $locker_nonce_jimscarver 64
-#define $locker_nonce_jimscarver 65
-#define $locker_nonce_jimscarver 66
-#define $locker_nonce_jimscarver 67
-#define $locker_nonce_jimscarver 68
-#define $locker_nonce_jimscarver 69
 #define $locker_nonce_aviation_hacker 2
 #define $inbox_aviation_hacker `rho:id:rddpw8d9neb1t7sfufsbunt4f5qwp68n6zmr1ax4hesh5rid5wpq6u`
-#define $locker_nonce_jimscarver 70
 #define $locker_nonce_Owans 4
-#define $locker_nonce_jimscarver 71
 #define $Directory `rho:id:dfcwyxpjcyfmk3u9db4u5xwr6z65y9qqiz46y9rmi7gpmpsmw1kxnz`
-#define $locker_nonce_jimscarver 72
-#define $locker_nonce_jimscarver 73
-#define $locker_nonce_jimscarver 74
 #define  $newDirectory($name) new ret, uriCh, itemsCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *uriCh) | for(locker <- uriCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     for (@items  <- itemsCh) {       if ( items.get("inbox") == Nil ) {         stdout!("you do not have an inbox")       } else {         lookup!($Directory,*uriCh) |         for( Dir <- uriCh ) {           Dir!(*ret) |           for ( read, write <- ret )  {            @{items.get("inbox")}!(["directoryAdmin", $name,( *read, *write)],*stdout) |            stdout!( $name ++ " created")          } }         }       } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) } }
-#define $locker_nonce_jimscarver 75
-#define $locker_nonce_jimscarver 76
 #define  $addUser($user, $name) new ret, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *ret) | for(locker <- ret) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *ret) |     for (@items  <- ret) {       if ( items.get("peek") == Nil ) {         stdout!("you do not have an mailbox")       } else {         lookup!($inbox_%%$user,*ret) |         for( inbox <- ret ) {           stdout!("finding" ++ $name ++ " in inbox of " ++ $myusername) |           @{items.get("peek")}!(*stdout) |           @{items.get("peek")}!("directoryAdmin", $name,*ret) |           for ( @[*read, *write] <- ret ) {             stdout!("sending capabilities to " ++ $user) |             inbox!(["directoryAdmin", $name, (*read, *write)], *stdout)           }         } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) } } } }
-#define $locker_nonce_jimscarver 77
-#define  $vote($ballot,$vote) new ret, lockerCh, itemsCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     for (@items  <- itemsCh) {       if ( items.get("peek") == Nil ) {         stdout!("you do not have a peek channel for your inbox")       } else {         @{items.get("peek")}!(*stdout) |         stdout!("getting voter") |         @{items.get("receive")}!("vote", $ballot, *ret) |         for( @{[voter]}  <- ret ) {           @voter!("vote",$vote,*stdout,*stdout) |           stdout!(["vote",$ballot,$myusername,"received"])         }       } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) } } }
 #define  $vote($ballot,$vote) new ret, lockerCh, itemsCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     for (@items  <- itemsCh) {       if ( items.get("peek") == Nil ) {         stdout!("you do not have a peek channel for your inbox")       } else {         stdout!("getting voter") |         @{items.get("receive")}!("vote", $ballot, *ret) |         for( @{[voter]}  <- ret ) {           @voter!("vote",$vote,*stdout,*stdout) |           stdout!(["vote",$ballot,$myusername,"received"])         }       } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) } } }
-#define  $receive($type,$subtype,$return) new lockerCh, itemsCh, stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     for (@items  <- itemsCh) {       if ( items.get("receive") == Nil ) {         stdout!("you do not have a receive channel for your inbox")       } else {         @{items.get("receive")}!($type, $subtype, *$return)       } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) } } }
 #define  $receive($type,$subtype,$return) new lockerCh, itemsCh, $stdout, $lookup in {   lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     for (@items  <- itemsCh) {       if ( items.get("receive") == Nil ) {         stdout!("you do not have a receive channel for your inbox")       } else {         @{items.get("receive")}!($type, $subtype, *$return)       } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) } } }
-#define $locker_nonce_jimscarver 78
-#define $locker_nonce_jimscarver 79
-#define $locker_nonce_jimscarver 80
-#define $locker_nonce_jimscarver 81
-#define $locker_nonce_jimscarver 82
-#define $locker_nonce_jimscarver 83
-#define $locker_nonce_jimscarver 84
+#define $locker_nonce_jimscarver 100
+#define $locker_nonce_Germany 5
+#define  $send($user, $list...) new $stdout, $lookup, ret in {   lookup!($inbox_%%$user, *ret) |   for ( inbox <- ret ) {     inbox!([$list], *stdout)    } }
+#define  $inbox_Germany"  `rho:id:qj6fs7r43mxky3u68esnp1m9u5r41rsz7y8ziupx8wgzobnahp43q9`
+#define  $locker_Germany", `rho:id:u5bx58kusz6gy45nu1ts3bosr6ymxeja9wue1jd1ko8udzmuux1od5`
+#define  $peek($types_return...) new lockerCh, itemsCh, $stdout, $lookup in {   lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     for (@items  <- itemsCh) {       if ( items.get("peek") == Nil ) {         stdout!("you do not have a peek channel for your inbox")       } else {         @{items.get("peek")}!($types_return)       } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) } } }
+#define $locker_nonce_jimscarver 101
+#define $locker_nonce_jimscarver 102
+#define $locker_nonce_jimscarver 103
+#define  $this "that"
+#define $locker_nonce_jimscarver 104
+#define  $receive($type,$subtype,$return) new lockerCh, itemsCh, $stdout, $lookup in {   lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     for (@items  <- itemsCh) {       if ( items.get("receive") == Nil ) {         stdout!("you do not have a receive channel for your inbox")       } else {         @{items.get("receive")}!($type, $subtype, $return)       } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) } } }
+#define $locker_nonce_jimscarver 105
