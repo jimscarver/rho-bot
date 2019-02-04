@@ -1,94 +1,151 @@
-
-MacRhoLang @RHO-bot
-
-Built in commands
-Private data data locker and user mailbox macro commands
-Mailbox macro commands
-Directories
-Voting
-Example using macros in Rholang code to share data and capabilities
-Your rchain application
-
-
+#MacRhoLang @RHO-bot
 
 Chatbots have become a leading means of managing distributed systems. @RHO-bot in the CoLab discord chat allows us to interface to a rchain node (rhobot.net,soon to be on testnet) in a language we cooperatively define. We define macros of parameterized rholang snippets allowing them to be used like user defined commands, functions or variables generating code to be run on rchain. It employs discord identities to create toy private and public keys enabling demonstration of contracts running on rchain with simple command interface. E.g. testing voting contracts and getting community sentiment on discord without people needing to learn rholang:
 
-newBallot: "colors",  Set("red", "green", "blue")
+  
+
+newBallot: "colors",  Set("red", "green", "blue")
+
 vote: “colors”, “green”
+
 voteresults: “colors”
 
-@RHO-bot is a work in progress being cooperatively constructed in the colab currently employing the cpp macro preprocessor and clang-format formatter for rholang on rchain with a discord.js chatbot.  @RHO-bot is running on rhobot.net. The source code is in github.
-Built in commands
-eval: <macrholang code> 
+  
+
+@RHO-bot is a work in progress being cooperatively constructed in [the colab](https://blog.rchain.coop/blog/2018/09/24/introduction-to-rchain-colab/) currently employing the [cpp macro preprocessor](http://gcc.gnu.org/onlinedocs/cpp/) and [clang-format](https://www.kernel.org/doc/html/v4.17/process/clang-format.html) formatter for [rholang](https://developer.rchain.coop/) on rchain with a discord.js chatbot.  @RHO-bot is running on rhobot.net. The [source code](https://github.com/jimscarver/rho-bot) is in github.
+
+### Built in commands
+
+eval: &lt;macrholang code&gt; 
+
 Expands macros, if any, and then executes the resulting rholang code and posts result from the log in the channel. Macros are defined if the output includes [“#define $name”,aValue]
 
-echo: <macrholang code>
+  
+
+echo: &lt;macrholang code&gt;
+
 Expands global macros (excluding personal macros such as private key) and posts the result to the channel.
 
-define: $<name> <macrholang code>
-define: $<name>($arg, …) <macrholang code including $args substitution>
+  
+
+define: $&lt;name&gt; &lt;macrholang code&gt;
+
+define: $&lt;name&gt;($arg, …) &lt;macrholang code including $args substitution&gt;
+
 e.g.
+
 define: $Ballot `rho:id:3qfh1fy7jwfcai7ceyorux4a18hzcn83n9xb6dramjf5gs7cw8fynf`
+
 define: $print($expression) new stdout(`rho:io:stdout`) in { stdout!($expression) }
 
+  
+  
 
+find: &lt;optional search regular expression&gt;
 
-find: <optional search regular expression>
-
+  
 
 deploy: 
+
 No arguments, deploys the tuple space of the last thing you evaluated on rchain.
 
+  
+
 propose: 
+
 No arguments. Proposes a block consisting of deploys from any user.
-Private data data locker and user mailbox macro commands
+
+### Private data data locker and user mailbox macro commands
+
 makemylocker:
+
 mylockerGet: *stdout
+
 mylockerGet: “key”, *stdout
+
 mylockerStore: “key”, “value”
+
 mylockerUpdate: “key”, “value”
 
-Mailbox macro commands
+  
+
+### Mailbox macro commands
+
 We communicate with other members through their write only public mailbox (inbox.rho). We can send messages that may include capabilities granting access rights such as the right to vote on a ballot.
 
+  
+
 send: “username”, “type”, “subtype”, data….
+
 receive: “type”, subtype”, *stdout
+
 peek: *stdout
+
 peek: “type”, *stdout
+
 peek: “type”, “subtype”, *stdout
 
-Directories
+  
+
+### Directories
+
 $newDirectory($name)
+
 $addUser($username,$directory)
 
-Voting
-newBallot: "colors",  Set("red", "green", "blue")
+  
+
+### Voting
+
+newBallot: "colors",  Set("red", "green", "blue")
+
 allowtovote: "jimscarver","colors"
+
 allowgrouptovote: “colab”, “colors”
+
 vote: "colors", "red"
+
 voteresults: "colors"
 
+  
+  
 
-Example using macros in Rholang code to share data and capabilities
+### Example using macros in Rholang code to share data and capabilities
+
 Discord markup renders rholang wrong such that characters are missing and copied programs are broken unless in a code block started and ended with ```
+
 We get the advantage of somewhat useful syntax highlighting if we start with ```scala
 
+  
+
 ```scala
+
 define: $share($username, $type, $subtype)
+
 new return in (
-  $peek($type, $subtype, *return) |
-  for ( list <- return) {
-    $send($username, [$type, $subtype] ++ *list)
-  }
+
+  $peek($type, $subtype, *return) |
+
+  for ( list &lt;- return) {
+
+    $send($username, [$type, $subtype] ++ *list)
+
+  }
+
 }
+
 ```
+
 Then I can invoke the macro as a command to share my colab directory admin capabilities:
+
+  
 
 share: "Emmanuel_mebyz", "directory", "colab"
 
+  
+  
 
-
-Your rchain application
+### Your rchain application
 
 Build a Discord Bot
 =========================
