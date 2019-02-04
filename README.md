@@ -1,47 +1,94 @@
 
-Sample dialog from this bot. Modify to make your own bot.
+MacRhoLang @RHO-bot
 
-```
-jimscarverToday at 2:46 PM
-rholang!
-RHO-botBOTToday at 2:46 PM
-@jimscarver, RHOlang is the language of RChain. Run a rholang program by typing:
-rholang: <your program>
-jimscarverToday at 2:47 PM
-rholang: 
-new HelloWorld in {
-  contract HelloWorld(return) = {
-    return!("Hello, World!")
-  } |
-  new myChannel in {
-    HelloWorld!(*myChannel)
+Built in commands
+Private data data locker and user mailbox macro commands
+Mailbox macro commands
+Directories
+Voting
+Example using macros in Rholang code to share data and capabilities
+Your rchain application
+
+
+
+Chatbots have become a leading means of managing distributed systems. @RHO-bot in the CoLab discord chat allows us to interface to a rchain node (rhobot.net,soon to be on testnet) in a language we cooperatively define. We define macros of parameterized rholang snippets allowing them to be used like user defined commands, functions or variables generating code to be run on rchain. It employs discord identities to create toy private and public keys enabling demonstration of contracts running on rchain with simple command interface. E.g. testing voting contracts and getting community sentiment on discord without people needing to learn rholang:
+
+newBallot: "colors",  Set("red", "green", "blue")
+vote: “colors”, “green”
+voteresults: “colors”
+
+@RHO-bot is a work in progress being cooperatively constructed in the colab currently employing the cpp macro preprocessor and clang-format formatter for rholang on rchain with a discord.js chatbot.  @RHO-bot is running on rhobot.net. The source code is in github.
+Built in commands
+eval: <macrholang code> 
+Expands macros, if any, and then executes the resulting rholang code and posts result from the log in the channel. Macros are defined if the output includes [“#define $name”,aValue]
+
+echo: <macrholang code>
+Expands global macros (excluding personal macros such as private key) and posts the result to the channel.
+
+define: $<name> <macrholang code>
+define: $<name>($arg, …) <macrholang code including $args substitution>
+e.g.
+define: $Ballot `rho:id:3qfh1fy7jwfcai7ceyorux4a18hzcn83n9xb6dramjf5gs7cw8fynf`
+define: $print($expression) new stdout(`rho:io:stdout`) in { stdout!($expression) }
+
+
+
+find: <optional search regular expression>
+
+
+deploy: 
+No arguments, deploys the tuple space of the last thing you evaluated on rchain.
+
+propose: 
+No arguments. Proposes a block consisting of deploys from any user.
+Private data data locker and user mailbox macro commands
+makemylocker:
+mylockerGet: *stdout
+mylockerGet: “key”, *stdout
+mylockerStore: “key”, “value”
+mylockerUpdate: “key”, “value”
+
+Mailbox macro commands
+We communicate with other members through their write only public mailbox (inbox.rho). We can send messages that may include capabilities granting access rights such as the right to vote on a ballot.
+
+send: “username”, “type”, “subtype”, data….
+receive: “type”, subtype”, *stdout
+peek: *stdout
+peek: “type”, *stdout
+peek: “type”, “subtype”, *stdout
+
+Directories
+$newDirectory($name)
+$addUser($username,$directory)
+
+Voting
+newBallot: "colors",  Set("red", "green", "blue")
+allowtovote: "jimscarver","colors"
+allowgrouptovote: “colab”, “colors”
+vote: "colors", "red"
+voteresults: "colors"
+
+
+Example using macros in Rholang code to share data and capabilities
+Discord markup renders rholang wrong such that characters are missing and copied programs are broken unless in a code block started and ended with ```
+We get the advantage of somewhat useful syntax highlighting if we start with ```scala
+
+```scala
+define: $share($username, $type, $subtype)
+new return in (
+  $peek($type, $subtype, *return) |
+  for ( list <- return) {
+    $send($username, [$type, $subtype] ++ *list)
   }
 }
-RHO-botBOTToday at 2:47 PM
-@jimscarver,  @{"result"}!(new x0 in { for( x1 <= x0 ) { x1!("Hello, World!") }
- (See the log: https://rhobot.net/rnode-log/
-jimscarverToday at 2:47 PM
-deploy:
-RHO-botBOTToday at 2:47 PM
-@jimscarver, 18:47:54.604 [main] INFO  c.r.n.configuration.Configuration$ - Starting with profile default
-Response: Success!
- (See the log: https://rhobot.net/rnode-log/
-jimscarverToday at 2:48 PM
-propose:
-RHO-botBOTToday at 2:48 PM
-@jimscarver, 18:48:25.814 [main] INFO  c.r.n.configuration.Configuration$ - Starting with profile default
-Response: Success! Block 6819ab4e2b... created and added.
- (See the log: https://rhobot.net/rnode-log/
-jimscarverToday at 2:52 PM
-rholang developer wannabees are welcome here.
-RHO-botBOTToday at 2:52 PM
-@jimscarver, RHOlang is the language of the mobile asyncronous communicating process calculus.
-jimscarverToday at 2:56 PM
-rholang can be discussed here.
-RHO-botBOTToday at 2:56 PM
-@jimscarver, See the rholang tutorial at https://developer.rchain.coop/tutorial
-
 ```
+Then I can invoke the macro as a command to share my colab directory admin capabilities:
+
+share: "Emmanuel_mebyz", "directory", "colab"
+
+
+
+Your rchain application
 
 Build a Discord Bot
 =========================
