@@ -2,7 +2,7 @@ new directory in {
   contract directory(capabilities) = {
     new mapCh, read, write in {
      mapCh!({}) |
-     capabilities!(bundle+{*read},bundle+{*write}) |
+     capabilities!({"read": bundle+{*read},"write": bundle+{*write}}) |
      contract read(return) = {
        for ( map <- mapCh ) {
          mapCh!(*map) |
@@ -34,17 +34,17 @@ new directory in {
       stdout!(["#define $Directory",*uri])
     } |
     directory!(*ret) |
-    for ( read, write <- ret ) {
-      write!("hello","world", *ret) |
-      write!("this","that", *ret) |
+    for ( @{"read": read, "write": write, ..._ } <- ret ) {
+      @write!("hello","world", *ret) |
+      @write!("this","that", *ret) |
       for( _ <- ret; _ <- ret ) {
-        read!(*ret) |
+        @read!(*ret) |
         for ( amap <- ret ) {
           stdout!(*amap) |
-          write!("this",Nil, *ret) | /* delete a key */
+          @write!("this",Nil, *ret) | /* delete a key */
           for ( _ <- ret ) {
-            read!("hello",*stdout) |
-            read!(*stdout)
+            @read!("hello",*stdout) |
+            @read!(*stdout)
           }
         }
       }

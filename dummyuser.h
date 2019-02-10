@@ -1,5 +1,6 @@
 #define $myusername "dummyuser"
 #define $myprivkey "aaaa"
-#define $locker_dummyuser `rho:id:n953kxiotz6bjhe8o5xndzi7mgwo5jxumccbbroe37ue7j3eyosrd4`
-#define $locker_nonce_dummyuser 62
-#define $inbox_dummyuser `rho:id:qrtsyjiugbn4sgdarddj7ogdzphypgm7js5xokdg6f7bkybmozknwx`
+#define $mypubkey "deadaaaa"
+#define $locker_dummyuser `rho:id:j6afr73pzy8dk6qa7qn9h9pbp87wgdgrww4dzy9ngf8jedwp9iqbwr`
+#define $locker_nonce_dummyuser 6
+#define $inbox_dummyuser `rho:id:chbabwgtyy6fcs7hkft4dfc57fxmu6bkrawygabtbq3f68ijqqjmpd`

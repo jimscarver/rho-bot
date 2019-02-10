@@ -27,12 +27,13 @@ in {
   |
   new uriCh in {
     insertArbitrary!(*Locker, *uriCh) | for(@uri <- uriCh) {
-      stdout!({"Locker is registerd at": uri})
+          stdout!(["#define $Locker",uri])
     }
   }
   |
   contract Locker(@{pubKey /\ ByteArray}, return) = {
     new self, itemsCh, nonceCh in {
+      trace!("making locker") |
       return!(bundle+{*self}) |
       itemsCh!({}) |
 

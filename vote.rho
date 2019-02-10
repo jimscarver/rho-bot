@@ -8,10 +8,14 @@ new ret, lockerCh, itemsCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout
         stdout!("you do not have a peek channel for your inbox")
       } else {
         stdout!("getting voter") |
-        @{items.get("receive")}!("vote", $ballot, *ret) |
+        @{items.get("peek")}!("vote", $ballot, *ret) |
         for( @{[voter]}  <- ret ) {
-          @voter!("vote",$vote,*stdout,*stdout) |
-          stdout!(["vote",$ballot,$myusername,"received"])
+          @voter!("vote",$vote,*stdout,*ret) |
+          stdout!(["vote",$ballot,$myusername,"received"]) |
+          for (success <- ret ) {
+           @{items.get("receive")}!("vote", $ballot, *ret) |
+           stdout!(*success) 
+          }
         }
       } |
       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])

@@ -1,5 +1,5 @@
-#define $name "testdir"
-#define $user "jimscarver"
+#define $directory "testdir"
+#define $username "jimscarver"
 new ret, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {
   lookup!($locker_%%$myusername, *ret) | for(locker <- ret) {
     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *ret) |
@@ -8,19 +8,19 @@ new ret, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {
       if ( items.get("peek") == Nil ) {
         stdout!("you do not have an mailbox")
       } else {
-        stdout!("finding " ++ $name ++ " in inbox of " ++ $myusername) |
-        @{items.get("peek")}!(*stdout) |
-        @{items.get("peek")}!("directory", $name,*ret) |
-        for ( @[read, write] <- ret ) {
-          if ( write == Nil ) {
-            stdout!("you do not have permission to write to " ++ $name)
+        stdout!("finding " ++ $directory ++ " in inbox of " ++ $myusername) |
+        @{items.get("peek")}!("directory", $directory,*ret) |
+        for ( @[{"read": *read, "write": *write, ..._ }, ..._] <- ret ) {
+          if ( *write == Nil ) {
+            stdout!("you do not have permission to write to " ++ $directory)
           } else {
-            lookup!($inbox_%%$user,*ret) |
+            lookup!($inbox_%%$username,*ret) |
             for( inbox <- ret ) {
-              stdout!("sending capabilities to " ++ $user) |
-              inbox!(["directory", $name, read, write], *stdout)
+              stdout!("adding " ++ $username) |
+              write!($username,*inbox, *stdout) |
+              inbox!(["directory", $directory, {"read": *read}], *stdout)
             }
           }
-        } |
+      } } |
       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])
-} } } }
+} } }

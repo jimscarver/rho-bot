@@ -8,7 +8,7 @@ new lockerCh, itemsCh, $stdout, $lookup in {
       if ( items.get("peek") == Nil ) {
         stdout!("you do not have a peek channel for your inbox")
       } else {
-        @{items.get("peek")}!(*$return)
+        @{items.get("peek")}!($type, $subtype, *$return)
         /* @{items.get("peek")}!($type, $subtype, *$return) */
       } |
       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])

@@ -17,12 +17,12 @@ const tail = new Tail("/home/rchain/rnode.log");
  
 var currentMessage;
 tail.on("line", function(data) {
-  if ( data.match(/^bundle|^@|^Nil$|^\(|^"|^[0-9.][0-9.]*$|^\[|^\{|^\(|^`|^Syntax Error/)) {
+  if ( data.match(/^Unforgeable|^bundle|^@|^Nil$|^\(|^"|^[0-9.][0-9.]*$|^\[|^\{|^\(|^`|^Syntax Error/)) {
+     data =  data.replace(/Unforgeable\((........)[^}]*\)/g,'<$1..>');
      console.log("log: "+data);
      if ( currentMessage ) {
 	currentMessage.reply(data);
        if ( data.match(/\[\"#define /) ) {
-       //if ( data.match(/^\["#define /) ) {
 	  var matches = data.match(/(#define[^"]*)", (.*)\]/);
 	  //currentMessage.reply(matches[1]+' '+matches[2]);
 	  exec( "echo '"+matches[1]+' '+matches[2]+"' >>global.h");
@@ -120,18 +120,6 @@ client.on('message', msg => {
             msg.reply(answers[n]);
 	}
     }
-    else if (content.match(/^newuser:/i)) {
-        tail.watch(); // turn on reporting log output as msg.reply
-         dir = exec(" rnode eval newuser.rho|sed '1,3d;s/Deployment cost: //;/^Storage Contents:/{x;q}'", 
-           function(err, stdout, stderr) {
-           if ( ! err ) {
-             msg.reply(stdout.substring(0,stdout.length-0));
-           } else {
-                msg.reply(stderr);
-           }
-           tail.unwatch();
-        });
-    }
     else if (content.match(/^define:/)) {
       if (! content.match(/^define:\s*\$/) ) {
         msg.reply("error: start macro names with a dollar sign $");
@@ -153,7 +141,7 @@ client.on('message', msg => {
          exec(command,
            function(err, stdout, stderr) {
            if ( ! err ) {
-             msg.reply(stdout.substring(0,1900));
+             msg.reply(":\n"+stdout.substring(0,1900));
            } else {
                 msg.reply("error:"+stderr);
            }
@@ -243,7 +231,7 @@ client.on('message', msg => {
 	//                  timestamp: new Date().valueOf()};
         msg.reply(`HELLO ${msg.author.username} id = ${msg.author.id}`);
     }
-    else if (content.match(/^[a-zA-Z0-9_-]*:/) && !msg.author.bot) {
+    else if (content.match(/^[a-zA-Z0-9_-]*:(\s|$)/) && !msg.author.bot) {
       const matches = content.match(/(^[^:]*): (.*)/);
       if (matches) {
         content = "eval: $"+matches[1]+'('+matches[2]+')';

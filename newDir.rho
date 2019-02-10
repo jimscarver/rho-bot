@@ -9,11 +9,12 @@ new ret, uriCh, itemsCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) 
         lookup!($Directory,*uriCh) |
         for( Dir <- uriCh ) {
           Dir!(*ret) |
-          for ( read, write <- ret )  {
-           @{items.get("inbox")}!(["directory", $name, *read, *write],*stdout) |
+          for ( map  <- ret )  {
+           @{items.get("inbox")}!(["directory", $name, *map],*stdout) |
+           /* stdout!(*map) | */
            stdout!( $name ++ " created")
          } }
-        }
-      } |
-      stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])
+        } |
+        stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])
+      }
 } }

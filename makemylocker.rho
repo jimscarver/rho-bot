@@ -2,8 +2,8 @@ new lookupCh, stdout(`rho:io:stdout`),
       lookup(`rho:registry:lookup`), insert(`rho:registry:insertArbitrary`), insCh in {
   lookup!($Locker, *lookupCh) |
   for(Locker <- lookupCh) {
-    stdout!("found Locker") |
-    new lockerCh, uriCh in {
+    stdout!(["found Locker",*Locker]) |
+    new capabilities, ret, inboxCh, lockerCh, uriCh in {
       Locker!($mypubkey.hexToBytes(), *lockerCh) | for(locker <- lockerCh) {
 stdout!("made Locker") |
         insert!(*locker, *uriCh) | for (@uri <- uriCh) {
@@ -13,8 +13,8 @@ stdout!("made Locker") |
         for (inbox <- inboxCh) {
           inbox!(*capabilities) |
           for (receive, send, peek <- capabilities) {
-            stdout!(["#define $locker_nonce_" ++ $myusername, $locker_nonce_%%$myusername + 1]) |
-            locker!("update", $myprivkey.hexToBytes(),$locker_nonce_%%$myusername, {"inbox": *send, "receive": *receive, "peek": *peek}, *stdout, *ret) |
+            stdout!(["#define $locker_nonce_" ++ $myusername, 1]) |
+            locker!("update", $myprivkey.hexToBytes(),0, {"inbox": *send, "receive": *receive, "peek": *peek}, *stdout, *ret) |
             for (_ <- ret) {
               insert!(*send,*ret)|
               for (uri <- ret) {
