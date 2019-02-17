@@ -6,7 +6,7 @@ if [ "$nonce" ]; then sed -i "/^#define \$locker_nonce_/ s/ [0-9]*$/ $nonce/" du
 
   cat global.h dummyuser.h end.h "$1" |
   cpp 2>/dev/null|
-  sed -n '/^_end_$/,${s/\%\%"\([^"]*\)"/\1/;p}'|tee /dev/tty|
+  sed -n '/^_end_$/,${s/\%\%"\([^"]*\)"/\1/g;p}'|tee /dev/tty|
   cat global.h dummyuser.h -|cpp 2>/dev/null|
   sed -n '/^_end_$/,$p' |
   tail +2 >"$1"x &&

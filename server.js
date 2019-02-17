@@ -152,7 +152,7 @@ client.on('message', msg => {
            "echo '"+content.substring(5).replace("'","'\"'\"'")+"'|"+
            "cat global.h end.h - |cpp 2>/tmp/cpp-error|"+
            "sed -n '/^#/d;/^_end_$/,$p'|tail +2|clang-format|"+
-           "perl -0777 -pe 's/\\n[ \\t]*-/-/igs;s/<\\w-/<- /g;s/\\n[ \\t]*:/:/igs;"+
+           "perl -0777 -pe 's/\\n[ \\t]*-/-/igs;s/<\\w-/<- /g;s/=\\w>/=> /g;s/\\n[ \\t]*:/:/igs;"+
            "s/ :/:/g;s/rho: ([a-zA-Z0-9]*:) /rho:\\1/g;s/ :/:/g;s/ !/!/g;"+
              "s/ \\+\\+/ \+\+ /g;s/ \\% \\% \"([^\"]*)\"/\\1/g;s/ < -/ <- /g;"+
              "s/ \\% \\% /%%/g'|tee lastecho";

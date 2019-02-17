@@ -1,0 +1,24 @@
+#define $collection {"a": "b", "c": "d", "e": "f", "g": "h"}
+#define $code stdout!({_key: _value})
+new $stdout, _loop in {
+contract _loop ( @_map ) = {
+  match  _map {
+    {} => Nil
+    { _key: _value, ..._tail } => {
+      $code |
+      _loop!(_tail)
+    }
+    []  => Nil
+    [_value, ..._tail] /\ _key => {
+      $code |
+      _loop!(_tail)
+    }
+    Set() => Nil
+    Set(_value, ..._tail) /\ _key => {
+      $code |
+      _loop!(_tail)
+    }
+  }
+} | _loop!( $collection )
+}
+

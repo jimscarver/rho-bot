@@ -1,0 +1,44 @@
+
+new ret, x, y, z, xCh, condCh, _if, _while, _until, stdout(`rho:io:stdout`) in {
+  contract _while(condCh,body) = {
+    for (cond <- condCh ) {
+      if (*cond) {
+        condCh!(*body ) |
+        _while!(*condCh,*body)
+      }
+    }
+  } |
+
+  contract _if(condCh,_then,_else) = {
+   for (cond <- condCh) {
+    stdout!(*cond) |
+    stdout!(*@{*cond}) |
+    *cond |
+    if ( *cond ) *_then
+    else *_else
+   }
+  } |
+  contract _if(cond,_then,_else, ret) = {
+    stdout!(*cond) |
+    if ( *cond ) ret!(*_then)
+    else ret!(*_else)
+  } |
+
+  condCh!(for (x <- xCh) {*x == 0}) |
+  //condCh!(3==3) |
+  _if!(*condCh, {xCh!(0)|stdout!("truly")}, xCh!(3+2)) |
+  for ( val <- xCh ) {
+    stdout!({"x1": *val})
+  } |
+ /*
+  _if!(3==5, 1+1, 2+2, *stdout) |
+  _if!(3==3, x!(10+1), x!(02+2), *y) |
+  for (rho <- y) {
+   stdout!(*rho) |
+   *rho |
+   for ( val <- x ) {
+    stdout!({"x2": *val})
+   }
+  }
+   */ Nil 
+}

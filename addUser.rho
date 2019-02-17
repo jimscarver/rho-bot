@@ -1,5 +1,5 @@
 #define $directory "testdir"
-#define $username "jimscarver"
+#define $username "Owans"
 new ret, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {
   lookup!($locker_%%$myusername, *ret) | for(locker <- ret) {
     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *ret) |

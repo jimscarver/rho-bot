@@ -58,3 +58,64 @@
 #define  $add2Directory($name, $key,$value,$ret) new ret, $stdout in {   $peek("directory",$name,*ret) | for (@[dir, ..._] <- ret ) {     @{dir.get("write")}!($key,$value,$ret)  } }
 #define  $addUser( $username,$directory) new ret, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *ret) | for(locker <- ret) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *ret) |     for (@items  <- ret) {       if ( items.get("peek") == Nil ) {         stdout!("you do not have an mailbox")       } else {         @{items.get("peek")}!("directory", $directory,*ret) |         for ( @[{"read": *read, "write": *write, ..._ }, ..._] <- ret ) {           if ( *write == Nil ) {             stdout!("you do not have permission to write to " ++ $directory)           } else {             lookup!($inbox_%%$username,*ret) |             for( inbox <- ret ) {               write!($username,*inbox, *stdout) |               inbox!(["directory", $directory, {"read": *read}], *stdout)             }           }       } } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) } } }
 #define $locker_nonce_jimscarver 42
+#define $locker_nonce_jimscarver 43
+#define $locker_nonce_jimscarver 44
+#define $locker_nonce_jimscarver 45
+#define $locker_nonce_jimscarver 46
+#define  $newBallot($name,$choiceSet) new lookupCh, bCh, $lookup, $stdout in {   lookup!($Ballot, *lookupCh) |   for(Ballot <- lookupCh) {     Ballot!($choiceSet, *bCh) |     for (chair, getWinner <- bCh) {       $send($myusername, "ballot", $name,  {"chair": *chair, "getWinner": *getWinner}) } } }
+#define $locker_nonce_jimscarver 47
+#define  $allowtovote($user,$ballot) new ret in {   $peek("ballot",$ballot,*ret) |   for ( @[{"chair": chair, ..._}, ..._] <- ret ) {     @chair!("giveRightToVote", *ret) |     for (@vote <- ret) {       $send($user,"vote",vote,*stdout)     }   } }
+#define $locker_nonce_jimscarver 48
+#define $locker_nonce_jimscarver 49
+#define  $allowtovote($user,$ballot) new ret in {   $peek("ballot",$ballot,*ret) |   for ( @[{"chair": chair, ..._}, ..._] <- ret ) {     @chair!("giveRightToVote", *ret) |     for (@vote <- ret) {       $send($user,"vote", $ballot, vote)     }   } }
+#define $locker_nonce_jimscarver 50
+#define $locker_nonce_jimscarver 51
+#define $locker_nonce_jimscarver 52
+#define $locker_nonce_jimscarver 53
+#define  $voteresults($ballot) new ret, $stdout in {   $peek("ballot",$ballot,*ret) |   for ( @[{"getWinner": results, ..._}, ..._] <- ret ) {     @results!(*stdout)   } }
+#define $locker_nonce_jimscarver 54
+#define  $receive($type,$subtype_return...) new lockerCh, itemsCh, $stdout, $lookup in {   lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |     for (@items  <- itemsCh) {       if ( items.get("receive") == Nil ) {         stdout!("you do not have a receive channel for your inbox")       } else {         @{items.get("receive")}!($type, $subtype_return)       } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) } } }
+#define $locker_nonce_jimscarver 55
+#define $locker_nonce_jimscarver 56
+#define $locker_nonce_jimscarver 57
+#define $locker_nonce_jimscarver 58
+#define  $allowalltovote($directory,$ballot) new lockerCh, ret, ret1, loop, $stdout, $lookup in {   lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *ret) |     for (@items  <- ret) {       @{items.get("peek")}!("directory", $directory, *ret) |       @{items.get("peek")}!("ballot", $ballot, *ret1) |       for ( @[{"read": *read, ..._}, ..._] <- ret;             @[{"chair": *chair, ..._}, ..._] <- ret1 ) {         contract loop ( @map ) = {           match  map {             {} => Nil             { username: *inbox, ...tail } => {               chair!("giveRightToVote", *ret) |               for (@vote <- ret) {                 inbox!(["vote", $ballot, vote])               } |               loop!(tail)             }           }         } |         read!(*ret) |         for ( @members <- ret ) {           loop!(members)         }       } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])     }   } }
+#define $locker_Owans `rho:id:muoibisbyqztaa9didj65otyxoio95yjkgqj7sgpo55xakhr4ysarq`
+#define $locker_nonce_Owans 1
+#define $inbox_Owans `rho:id:k3465k7e67faohyo8kt9n9ypaaeiru7hyenbys9rjq3x79a9ssx4dn`
+#define $locker_nonce_jimscarver 59
+#define  $addUser( $username,$directory) new ret, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *ret) | for(locker <- ret) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *ret) |     for (@items  <- ret) {       if ( items.get("peek") == Nil ) {         stdout!("you do not have an mailbox")       } else {         @{items.get("peek")}!("directory", $directory,*ret) |         for ( @[{"read": *read, "write": *write, ..._ }, ..._] <- ret ) {           if ( *write == Nil ) {             stdout!("you do not have permission to write to " ++ $directory)           } else {             lookup!($inbox_%%$username,*ret) |             for( inbox <- ret ) {               write!($username,*inbox, *stdout) |               inbox!(["directory", $directory, {"read": *read}], *stdout)             }           }       } } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) } } }
+#define $locker_nonce_jimscarver 60
+#define  $addUser( $username,$directory) new ret, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {   lookup!($locker_%%$myusername, *ret) | for(locker <- ret) {     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *ret) |     for (@items  <- ret) {       /* stdout!(items) | */       if ( items.get("peek") == Nil ) {         stdout!("you do not have an mailbox")       } else {         stdout!("finding " ++ $directory ++ " in inbox of " ++ $myusername) |         @{items.get("peek")}!("directory", $directory,*ret) |         for ( @[{"read": *read, "write": *write, ..._ }, ..._] <- ret ) {           if ( *write == Nil ) {             stdout!("you do not have permission to write to " ++ $directory)           } else {             lookup!($inbox_%%$username,*ret) |             for( inbox <- ret ) {               stdout!("adding " ++ $username) |               write!($username,*inbox, *stdout) |               inbox!(["directory", $directory, {"read": *read}], *stdout)             }           }       } } |       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) } } }
+#define $locker_nonce_jimscarver 61
+#define $locker_nonce_jimscarver 62
+#define $locker_nonce_jimscarver 63
+#define $locker_nonce_jimscarver 64
+#define $locker_nonce_jimscarver 65
+#define $locker_nonce_jimscarver 66
+#define $locker_nonce_jimscarver 67
+#define $locker_nonce_jimscarver 68
+#define $locker_nonce_jimscarver 69
+#define $locker_nonce_SteveHenley 3
+#define $locker_nonce_SteveHenley 4
+#define $locker_nonce_jimscarver 70
+#define $locker_nonce_SteveHenley 5
+#define $locker_nonce_jimscarver 71
+#define $locker_nonce_jimscarver 72
+#define $locker_nonce_jimscarver 73
+#define $locker_tgrospic `rho:id:mb3e8gadzbcuydgng9ig4he7dx1nfgups8xz8jfi6km5bwouupbigd`
+#define $locker_nonce_tgrospic 1
+#define $inbox_tgrospic `rho:id:k6hn3yz3kforb95bxypa5wb4oakpra64exgj6cmm3mbhh3fhj6xhej`
+#define $locker_nonce_jimscarver 74
+#define $locker_nonce_jimscarver 75
+#define $locker_nonce_jimscarver 76
+#define $locker_nonce_jimscarver 77
+#define $Inbox `rho:id:as81nitjknceoawprj7fe6euu336xwajng4c1axpqq7hq8k348jweu`
+#define  $foreach($collection, $body) contract _loop ( @_map ) = {   match  _map {     {} => Nil     { _key: _value, ..._tail } => {       $body |       _loop!(_tail)     }     []  => Nil     [_value, ..._tail] /\ _key => {       $body |       _loop!(_tail)     }     Set() => Nil     Set(_value, ..._tail) /\ _key => {       $body |       _loop!(_tail)     }   } } | _loop!( $map )
+#define  $foreach($collection,$code) contract _loop ( @_map ) = {   match  _map {     {} => Nil     { _key: _value, ..._tail } => {       $body |       _loop!(_tail)     }     []  => Nil     [_value, ..._tail] /\ _key => {       $body |       _loop!(_tail)     }     Set() => Nil     Set(_value, ..._tail) /\ _key => {       $body |       _loop!(_tail)     }   } } | _loop!( $collection )
+#define  $foreach($collection,$code) contract _loop ( @_map ) = {   match  _map {     {} => Nil     { _key: _value, ..._tail } => {       $body |       _loop!(_tail)     }     []  => Nil     [_value, ..._tail] /\ _key => {       $code |       _loop!(_tail)     }     Set() => Nil     Set(_value, ..._tail) /\ _key => {       $body |       _loop!(_tail)     }   } } | _loop!( $collection )
+#define  $foreach($collection,$code) contract _loop ( @_map ) = {   match  _map {     {} => Nil     { _key: _value, ..._tail } => {       $code |       _loop!(_tail)     }     []  => Nil     [_value, ..._tail] /\ _key => {       $body |       _loop!(_tail)     }     Set() => Nil     Set(_value, ..._tail) /\ _key => {       $code |       _loop!(_tail)     }   } } | _loop!( $collection )
+#define  $foreach($collection,$code) contract _loop ( @_map ) = {   match  _map {     {} => Nil     { _key: _value, ..._tail } => {       $code |       _loop!(_tail)     }     []  => Nil     [_value, ..._tail] /\ _key => {       $code |       _loop!(_tail)     }     Set() => Nil     Set(_value, ..._tail) /\ _key => {       $code |       _loop!(_tail)     }   } } | _loop!( $collection )
+#define  $foreach($collection,$code) contract _loop ( @_map ) = {   match  _map {     {} => Nil     { _key: _value, ..._tail } => {       $code |       _loop!(_tail)     }     []  => Nil     [_value, ..._tail] /\ _key => {       $code |       _loop!(_tail)     }     Set() => Nil     Set(_value, ..._tail) /\ _key => {       $code |       _loop!(_tail)     }   }
+#define  $foreach($collection,$code) contract _loop ( @_map ) = {   match  _map {     {} => Nil     { _key: _value, ..._tail } => {       $code |       _loop!(_tail)     }     []  => Nil     [_value, ..._tail] /\ _key => {       $code |       _loop!(_tail)     }     Set() => Nil     Set(_value, ..._tail) /\ _key => {       $code |       _loop!(_tail)     }   } }
+#define  $foreach($collection,$code) new $stdout, _loop in { contract _loop ( @_map ) = {   match  _map {     {} => Nil     { _key: _value, ..._tail } => {       $code |       _loop!(_tail)     }     []  => Nil     [_value, ..._tail] /\ _key => {       $code |       _loop!(_tail)     }     Set() => Nil     Set(_value, ..._tail) /\ _key => {       $code |       _loop!(_tail)     }   } } | _loop!( $collection ) }
