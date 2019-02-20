@@ -152,7 +152,7 @@ client.on('message', msg => {
          let rholang = "" +
            "echo '"+content.substring(5).replace("'","'\"'\"'")+"'|"+
            "cat global.h end.h - |cpp 2>/tmp/cpp-error|tee cpp-out|"+
-           "sed -n '/^#/d;/^_end_$/,$p'|tail +2|sed 's/\"~~\"/\\\n/g'";
+           "sed -n '/^#/d;/^_end_$/,$p'|tail +2|sed 's/\"~~\" */\\\n/g'";
             
 /*
            "sed -n '/^#/d;/^_end_$/,$p'|tail +2|clang-format|"+
@@ -168,16 +168,19 @@ client.on('message', msg => {
 	     let rho = stdout;
 	     if ( ! rho.match(/\n./) ) { // add new lines to code without any
 	       rho = rho.replace(/\{/g,"{\n")
-	       rho = rho.replace(/\}/g,"\n}")
-	       rho = rho.replace(/\|/g,"|\n")
+	       rho = rho.replace(/\} */g,"\n}")
+	       rho = rho.replace(/\| */g,"|\n")
 	     }
-	     let rholang2 = ""; let indent = "";
+	     let rholang2 = ""; let indent = ""; let last = "";
 	     for (const c of rho) { // cpp removes whitespace so add back indenting
-	       rholang2 += c;
+	       if ( c == "}" ) indent = indent.substring(2);
+               if (last.match(/\n/)) rholang2 += indent;
 	       if ( c == '{' ) indent += "  ";
-	       else if ( c == "}" ) indent = indent.substring(2);
-	       else if ( c.match(/\n/)) rholang2 += indent;
+	       //else if ( c.match(/\n/)) rholang2 += indent;
+	       rholang2 += c;
+               last = c;
              }
+	     rholang2 += last;
              msg.reply("```scala\n"+rholang2+"\n```");
            } else {
                 msg.reply("error:"+stderr);
