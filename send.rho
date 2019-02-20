@@ -1,0 +1,7 @@
+#define $user "dummyuser"
+#define $message "chat","jimscarver","Hi dummy."
+new stdout(`rho:io:stdout`), lookup(`rho:registry:lookup`), ret in {
+  lookup!($inbox_%%$user, *ret) | for (inbox <- ret) {
+    inbox!([$message], *stdout)
+  }
+}

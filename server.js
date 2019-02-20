@@ -124,7 +124,8 @@ client.on('message', msg => {
       if (! content.match(/^define:\s*\$/) ) {
         msg.reply("error: start macro names with a dollar sign $");
       } else {
-        exec("echo '#define "+content.substring(7).replace(/(?:\r\n|\r|\n)/g, " ").replace("'","'\"'\"'")+"' >>global.h");
+        let command = "echo '#define "+content.substring(7).replace(/(?:\r\n|\r|\n)/, ' ').replace(/(?:\r\n|\r|\n)/g, '"~~"').replace("'","'\"'\"'")+"' >>global.h";
+        exec(command);
         msg.reply("defined "+content.substring(7,(content+"\n").indexOf("\n")));
       }
     }
@@ -150,17 +151,34 @@ client.on('message', msg => {
     else if (content.match(/^echo:/i)) {
          let rholang = "" +
            "echo '"+content.substring(5).replace("'","'\"'\"'")+"'|"+
-           "cat global.h end.h - |cpp 2>/tmp/cpp-error|"+
+           "cat global.h end.h - |cpp 2>/tmp/cpp-error|tee cpp-out|"+
+           "sed -n '/^#/d;/^_end_$/,$p'|tail +2|sed 's/\"~~\"/\\\n/g'";
+            
+/*
            "sed -n '/^#/d;/^_end_$/,$p'|tail +2|clang-format|"+
            "perl -0777 -pe 's/\\n[ \\t]*-/-/igs;s/<\\w-/<- /g;s/=\\w>/=> /g;s/\\n[ \\t]*:/:/igs;"+
            "s/ :/:/g;s/rho: ([a-zA-Z0-9]*:) /rho:\\1/g;s/ :/:/g;s/ !/!/g;"+
              "s/ \\+\\+/ \+\+ /g;s/ \\% \\% \"([^\"]*)\"/\\1/g;s/ < -/ <- /g;"+
              "s/ \\% \\% /%%/g'|tee lastecho";
+*/
          console.log(rholang)
          exec(rholang,
            function(err, stdout, stderr) {
            if ( ! err ) {
-             msg.reply("```scala\n"+stdout+"\n```");
+	     let rho = stdout;
+	     if ( ! rho.match(/\n./) ) { // add new lines to code without any
+	       rho = rho.replace(/\{/g,"{\n")
+	       rho = rho.replace(/\}/g,"\n}")
+	       rho = rho.replace(/\|/g,"|\n")
+	     }
+	     let rholang2 = ""; let indent = "";
+	     for (const c of rho) { // cpp removes whitespace so add back indenting
+	       rholang2 += c;
+	       if ( c == '{' ) indent += "  ";
+	       else if ( c == "}" ) indent = indent.substring(2);
+	       else if ( c.match(/\n/)) rholang2 += indent;
+             }
+             msg.reply("```scala\n"+rholang2+"\n```");
            } else {
                 msg.reply("error:"+stderr);
            }
@@ -184,7 +202,7 @@ client.on('message', msg => {
 
          console.log("The file was saved!");
          let bash = "cat global.h '/tmp/"+author+".rhox' |cpp 2>cpperrors|"+
-           "sed 's/\\%\\%\"\\([^\"]*\\)\"/\\1/g'|"+
+           "sed 's/\\%\\%\"\\([^\"]*\\)\"/\\1/g;s/\"~~\"/ /g'|"+
            "cat global.h end.h -|cpp 2>cpperrors2|sed -n '/^#/d;/^_end_$/,$p'|tee lasteval|"+
            "tail +2 >'/tmp/"+author+".rho';"+
            "rnode eval '/tmp/"+author+".rho'|"+

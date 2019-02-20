@@ -1,6 +1,6 @@
 #define $directory "testdir"
-#define $username "Owans"
-new ret, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {
+#define $username "jimscarver"
+new ret, ret1, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {
   lookup!($locker_%%$myusername, *ret) | for(locker <- ret) {
     locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *ret) |
     for (@items  <- ret) {
@@ -10,15 +10,17 @@ new ret, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {
       } else {
         stdout!("finding " ++ $directory ++ " in inbox of " ++ $myusername) |
         @{items.get("peek")}!("directory", $directory,*ret) |
-        for ( @[{"read": *read, "write": *write, ..._ }, ..._] <- ret ) {
+        for ( @[{"read": *read, "write": *write, "grant": grant, ..._ }, ..._] <- ret ) {
           if ( *write == Nil ) {
             stdout!("you do not have permission to write to " ++ $directory)
           } else {
             lookup!($inbox_%%$username,*ret) |
-            for( inbox <- ret ) {
+            @grant!($username, *ret1) |
+            for( inbox <- ret; changekey <- ret1 ) {
               stdout!("adding " ++ $username) |
               write!($username,*inbox, *stdout) |
-              inbox!(["directory", $directory, {"read": *read}], *stdout)
+              inbox!(["directory", $directory, 
+                {"read": *read, "changekey": *changekey}], *stdout)
             }
           }
       } } |

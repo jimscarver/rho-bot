@@ -86,26 +86,27 @@ contract Inbox(capabilities) = {
           */
          match message {
           [type, subtype, map /\ {a: b, ..._} ] => {
-              match *items {
-                {[=type, =subtype, oldmap] | more } => {
-                  box!([type, subtype, map.union(oldmap)] | more) |
-                  ret!("added.")
-                }
-                _ => {
-                  box!(*items | message) |
-                  ret!("sent...")
-                }
+            match *items {
+              {[=type, =subtype, oldmap] | more } => {
+                box!([type, subtype, map.union(oldmap)] | more) |
+                /* stdout!(map.union(oldmap)) | */
+                ret!("added.")
               }
+              _ => {
+                box!(*items | message) |
+                ret!("sent...")
+              }
+            }
           }
           _ => {
             //stdout!([*message, *items]) |
             box!(*items | message) |
             ret!("sent.")
-         }
-       }
-     }
-   }
- }
+          }
+        }
+      }
+    }
+  }
 } |
 new capabilities, ack, ack1, message, uriCh, $insertArbitrary in {
   stdout!("hello world") |
@@ -116,12 +117,12 @@ new capabilities, ack, ack1, message, uriCh, $insertArbitrary in {
   Inbox!(*capabilities) |
   for (receive, send, peek <- capabilities) {
     stdout!("received capabilities") |
-    send!(["values","test", {"a": "b"}], *ack) |
+    send!(["values","test", {"a": "b", "b": "c"}], *ack) |
     send!(["chat",$myusername ++ ": Watson come quickly!"], *ack) |
     send!(["chat",$myusername, "Watson come now!"], *ack) |
     send!(["chat","hello world"], *ack) |
     for ( _ <- ack; _ <- ack; _ <- ack; _ <- ack) {
-      send!(["values","test", {"c": "d"}], *stdout) |
+      send!(["values","test", {"a": "x", "c": "d"}], *stdout) |
       //receive!(["chat", _ ], *message) |
       receive!("chat", *message) |
       for ( text <- message ) {
