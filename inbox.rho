@@ -77,19 +77,12 @@ contract Inbox(capabilities) = {
 
     contract write(@message,ret) = {
        for (items <- box) {
-         /*
-         match *items {
-          {[type /\ {=message}.nth(0), subtype /\ {=message}.nth(1), map  ] | more } => {
-              box!([type, subtype, message.nth(2).union(map)] | more) |
-              ret!("added.")
-          } xx}
-          */
          match message {
           [type, subtype, map /\ {a: b, ..._} ] => {
             match *items {
               {[=type, =subtype, oldmap] | more } => {
                 box!([type, subtype, map.union(oldmap)] | more) |
-                /* stdout!(map.union(oldmap)) | */
+           //stdout!([type, subtype, map.union(oldmap)]) |
                 ret!("added.")
               }
               _ => {
@@ -108,7 +101,7 @@ contract Inbox(capabilities) = {
     }
   }
 } |
-new capabilities, ack, ack1, message, uriCh, $insertArbitrary in {
+new capabilities, ack, ack1, message, uriCh, ret, $insertArbitrary in {
   stdout!("hello world") |
   insertArbitrary!(*Inbox, *uriCh)|
   for (uri <- uriCh) {
@@ -117,12 +110,15 @@ new capabilities, ack, ack1, message, uriCh, $insertArbitrary in {
   Inbox!(*capabilities) |
   for (receive, send, peek <- capabilities) {
     stdout!("received capabilities") |
+  insertArbitrary!(*send, *uriCh)|
     send!(["values","test", {"a": "b", "b": "c"}], *ack) |
     send!(["chat",$myusername ++ ": Watson come quickly!"], *ack) |
     send!(["chat",$myusername, "Watson come now!"], *ack) |
     send!(["chat","hello world"], *ack) |
-    for ( _ <- ack; _ <- ack; _ <- ack; _ <- ack) {
-      send!(["values","test", {"a": "x", "c": "d"}], *stdout) |
+    for ( uri <- uriCh;  _ <- ack; _ <- ack; _ <- ack; _ <- ack) {
+      stdout!(["inbox",*uri]) | // for testing temprarily
+      send!(["values","test", {"a": "x", "c": "d"}], *ret) |
+      for ( map <- ret ) {peek!("values","test",*stdout)} |
       //receive!(["chat", _ ], *message) |
       receive!("chat", *message) |
       for ( text <- message ) {

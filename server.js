@@ -37,6 +37,23 @@ tail.on("error", function(error) {
   console.log('ERROR: ', error);
 });
 
+function rhoformat(rho) {
+     if ( ! rho.match(/\n./) ) { // add new lines to code without any
+       rho = rho.replace(/^  */,"")
+       rho = rho.replace(/\{\s/g,"{\n")
+       rho = rho.replace(/\s\} */g,"\n}")
+       rho = rho.replace(/\| */g,"|\n")
+     }
+     let rholang2 = ""; let indent = ""; let last = "";
+     for (const c of rho) { // cpp removes whitespace so add back indenting
+       if ( c == "}" ) indent = indent.substring(2);
+       if (last.match(/\n/)) rholang2 += indent;
+       if ( c == '{' ) indent += "  ";
+       rholang2 += c;
+              last = c;
+     }
+     return rholang2 += last;
+}
 // 'client.on('message')' commands are triggered when the
 // specified message is read in a text channel that the bot is in.
 
@@ -55,8 +72,8 @@ client.on('message', msg => {
   currentMessage = msg;
   console.log(msg.author.username+": "+msg.content);
   let content = msg.content;
-  var repeat = true;
-  var retry = 0;
+  let repeat = true;
+  let retry = 0;
   while (repeat && retry < 2) {
     repeat = false;
     if (content.match(/^```rholang.*/)) {
@@ -149,45 +166,41 @@ client.on('message', msg => {
            })
     }
     else if (content.match(/^echo:/i)) {
+      // if a command colon, make is a function call
+      if (content.match(/^echo:  *[a-zA-Z0-9_-]*:(\s|$)/) && !msg.author.bot) {
+          let match = content.match(/^echo:  *([^:]*): *(.*)/);
+          content = "echo: $"+match[1]+'('+match[2]+")";
+      }
+      console.log(content);
          let rholang = "" +
            "echo '"+content.substring(5).replace("'","'\"'\"'")+"'|"+
            "cat global.h end.h - |cpp 2>/tmp/cpp-error|tee cpp-out|"+
-           "sed -n '/^#/d;/^_end_$/,$p'|tail +2|sed 's/\"~~\" */\\\n/g'";
-         console.log(rholang)
+           "sed -n '/^#/d;/^_end_$/,$p'|tail +2|sed 's/\"~~\" */\\\n/g;"+
+	     "/.\\{1900,\\}/s/\\(.{1900\\}\\).*/\\1... too long for discord/'"; // TODO doesnt work
+         //console.log(rholang)
          exec(rholang,
            function(err, stdout, stderr) {
            if ( ! err ) {
-	     let rho = stdout;
-	     if ( ! rho.match(/\n./) ) { // add new lines to code without any
-	       rho = rho.replace(/\{/g,"{\n")
-	       rho = rho.replace(/\} */g,"\n}")
-	       rho = rho.replace(/\| */g,"|\n")
-	     }
-	     let rholang2 = ""; let indent = ""; let last = "";
-	     for (const c of rho) { // cpp removes whitespace so add back indenting
-	       if ( c == "}" ) indent = indent.substring(2);
-               if (last.match(/\n/)) rholang2 += indent;
-	       if ( c == '{' ) indent += "  ";
-	       //else if ( c.match(/\n/)) rholang2 += indent;
-	       rholang2 += c;
-               last = c;
-             }
-	     rholang2 += last;
+	     let rholang2 = rhoformat(stdout);
              msg.reply("```scala\n"+rholang2+"\n```");
            } else {
                 msg.reply("error:"+stderr);
            }
            })
     }
-    else if (content.match(/^raw:/i)) {
+    else if (content.match(/^show:/i)) {
+      console.log(content);
          let rholang = "" +
-           "grep -i '^#define[ \\$]*"+content.substring(5).replace("'","'\"'\"'")+"' global.h|"+
-           "tail -1|sed 's/\"~~\" */\\\n/g'";
-         console.log(rholang)
+         "grep -i '^#define[ \\$]*"+content.substring(6).replace("'","'\"'\"'")+"[ \\(]' global.h|"+
+           "tail -1|sed 's/\"~~\" */\\n/g'";
+	 console.log(rholang);
          exec(rholang,
            function(err, stdout, stderr) {
            if ( ! err ) {
 	     let rho = stdout.substring(7);
+	     console.log(rho);
+	     rho= rhoformat(rho.replace(/\)  *\(/,") (").replace(/^  */," "));
+	     console.log(rho);
 	     if ( ! rho.match(/\n./) ) { // add new lines to code without any
 	       rho = rho.replace(/([^ ])  /g,"$1\n  ")
 	     }
@@ -215,7 +228,7 @@ client.on('message', msg => {
 
          console.log("The file was saved!");
          let bash = "cat global.h '/tmp/"+author+".rhox' |cpp 2>cpperrors|"+
-           "sed 's/\\%\\%\"\\([^\"]*\\)\"/\\1/g;s/\"~~\"/ /g'|"+
+           "sed 's/\\%\\%\"\\([^\"]*\\)\"/\\1/g;s/\"~~\"/\\n/g'|"+
            "cat global.h end.h -|cpp 2>cpperrors2|sed -n '/^#/d;/^_end_$/,$p'|tee lasteval|"+
            "tail +2 >'/tmp/"+author+".rho';"+
            "rnode eval '/tmp/"+author+".rho'|"+
@@ -225,10 +238,19 @@ client.on('message', msg => {
          //dir = exec(" rnode eval /tmp/"+author+".rho|sed '2,3d;/^Storage Contents:/{x;q}'", 
            function(err, stdout, stderr) {
            if ( ! err ) {
+	     if ( stdout.match(/Illegal Character \<\$\> /) ) {
+	       fs.readFile("/tmp/"+author+".rho", function(err, rholang) {
+                 if(err) {
+                  return console.log(err);
+                 } else {
+		   msg.reply((""+rholang).match(/(\$[a-zA-Z_0-9]*)/)[1]+" undefined");
+		 }
+	       })
+	     }
 	//	msg.reply(stdout.substring(0,500)+"\n...\n"+stdout.substring(stdout.length-500));
              msg.reply(stdout.substring(0,stdout.length-0));
            } else {
-                msg.reply(stderr);
+             msg.reply(stderr);
            }
            tail.unwatch();
         });
