@@ -76,10 +76,7 @@
 #define  $foreach($collection,$code) new $stdout, _loop in {"~~"contract _loop ( @_map ) = {"~~"  match  _map {"~~"    {} => Nil"~~"    { _key: _value, ..._tail } => {"~~"      $code |"~~"      _loop!(_tail)"~~"    }"~~"    []  => Nil"~~"    [_value, ..._tail] /\ _key => {"~~"      $code |"~~"      _loop!(_tail)"~~"    }"~~"    Set() => Nil"~~"    Set(_value, ..._tail) /\ _key => {"~~"      $code |"~~"      _loop!(_tail)"~~"    }"~~"    /* _ /\ _name => {for ( @collection <- @_name ) { _loop!(collection) } } */"~~"  }"~~"} | _loop!( $collection )"~~"}
 #define  $receive($type,$subtype_return...) new lockerCh, itemsCh, $stdout, $lookup in {"~~"  lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) {"~~"    locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |"~~"    for (@items  <- itemsCh) {"~~"      if ( items.get("receive") == Nil ) {"~~"        stdout!("you do not have a receive channel for your inbox")"~~"      } else {"~~"        @{items.get("receive")}!($type, $subtype_return)"~~"      } |"~~"      stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])"~~"} } }
 #define  $send($user, $list...) new $stdout, $lookup, ret in {"~~"  lookup!($inbox_%%$user, *ret) |"~~"  for ( inbox <- ret ) {"~~"    inbox!([$list], *stdout)"~~"   }"~~"}
-#define $locker_aviation_hacker `rho:id:s7h8354xsbg43fhuigkicns585c11qg8oh6k5exzhxf9ekuoa3co8u`
-#define $inbox_aviation_hacker `rho:id:guwa1dtss79xrt8wr8zqmht57r6tdafexn3eicfxi7bnjtd8314qx5`
 #define  $addUser($username,$directory) new ret, ret1, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {"~~"  lookup!($locker_%%$myusername, *ret) | for(locker <- ret) {"~~"    locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *ret) |"~~"    for (@items  <- ret) {"~~"      /* stdout!(items) | */"~~"      if ( items.get("peek") == Nil ) {"~~"        stdout!("you do not have an mailbox")"~~"      } else {"~~"        stdout!("finding " ++ $directory ++ " in inbox of " ++ $myusername) |"~~"        @{items.get("peek")}!("directory", $directory,*ret) |"~~"        for ( @[{"read": *read, "write": *write, "grant": grant, ..._ }, ..._] <- ret ) {"~~"          if ( *write == Nil ) {"~~"            stdout!("you do not have permission to write to " ++ $directory)"~~"          } else {"~~"            lookup!($inbox_%%$username,*ret) |"~~"            @grant!($username, *ret1) |"~~"            for( inbox <- ret; changekey <- ret1 ) {"~~"              stdout!("adding " ++ $username) |"~~"              write!($username,*inbox, *stdout) |"~~"              inbox!(["directory", $directory,"~~"                {"read": *read, "changekey": *changekey}], *stdout)"~~"            }"~~"          }"~~"      } } |"~~"      stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])"~~"} } }
-#define $locker_nonce_aviation_hacker 5
 #define $locker_GaryC `rho:id:src8chtknsp6dswe5wcmjjc9rhbyh5fojros9ymptuodbqwnibu4s7`
 #define $inbox_GaryC `rho:id:wuo5rztqroa76qeqhprgswdch9rkggrbpbb1qxq4tpq1a8rk3k4nid`
 #define $locker_tgrospic `rho:id:tr7twmx38b9qq5czqzjzgapbry53yknkstsr1qfi6axwnngapnwq9o`
@@ -95,12 +92,16 @@
 #define $inbox_SteveHenley `rho:id:awa1ybic84pahmhk9ffcjx6ji4womjzb315oag3p18h1dpzmge1h6f`
 #define $locker_SteveHenley `rho:id:uju9m7b65wfwp6mw139ffu1on3kt61wjug6oi9zn6nm58ffe5aek3j`
 #define $Ballot `rho:id:rnr9diu7tawe1gdnhcgda456orttc1b4sfgfggkfqbfzcgqwbf6i55`
-#define  $readDirectory($name, $arg_ret...)  new ret, $stdout in {"~~"    $peek("directory",$name,*_ret) |"~~"  for (@[dir, ..._] <- _ret ) {"~~"        @{dir.get("read")}!($arg_ret) "~~"  }}
 #define  $readchat $receive("chat",*stdout)
 #define $locker_nonce_SteveHenley 18
 #define  $locker_dummyuser `rho:id:c6e643opwowg8k1hdawnexsmo37twucf3cuazsndtu9xgnrc4wfymu`
 #define  $inbox_dummyuser `rho:id:c7mfqadh6id74erjnd8bh1eb8qz91pnmner9zdx146i1yjg3dhguyy`
-#define  $at($timespec,$code) new ret, $stdout in {"~~"  $send("dummyuser","event:", $_messageid,  $code) |"~~"  stdout!(["event:", "at:", $timespec,  $_messageid])"~~"}
-#define $locker_nonce_dummyuser 35
-#define $locker_nonce_jimscarver 102
-#define  $print($rho) new $stdout in {stdout!($rho)} "~~"
+#define  $print($expression) new $stdout in {stdout!($expression)}
+#define $locker_aviation_hacker `rho:id:fii899z58qzguttignbj39id94kuij8dhie6graqogmftqbcyfemkd`
+#define $locker_nonce_aviation_hacker 1
+#define $inbox_aviation_hacker `rho:id:a1hjgkfo67kiz13jeghyqnpkohsxzp6xwbjryzwkxdifktyk66ihou`
+#define   $at($timespec,$code) new $stdout in {   $send("dummyuser","event:", $_messageid,  $code) |"~~"  stdout!(["event:", "at:", $timespec,  $_messageid])"~~"}
+#define $locker_nonce_dummyuser 38
+#define   $readDir($name, $arg_ret...)  new _ret, $stdout in {   $peek("directory",$name,*_ret) |"~~"  for (@[dir] <- _ret ) {"~~"    @{dir.get("read")}!($arg_ret) "~~"  }}
+#define $locker_nonce_jimscarver 125
+#define   $readDirectory($name, $arg_ret...)  new _ret, $stdout in {   $peek("directory",$name,*_ret) |"~~"  for (@[dir, ..._] <- _ret ) {"~~"    @{dir.get("read")}!($arg_ret) "~~"  }}

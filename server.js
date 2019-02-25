@@ -15,13 +15,16 @@ const Tail = require('tail').Tail;
  
 const tail = new Tail("/home/rchain/rnode.log");
  
+var debug = 0;
 var currentMessage;
 var lastMessage;
 tail.on("line", function(data) {
-  if ( data.match(/^Unforgeable|^bundle|^@|^Nil$|^\(|^"|^[0-9.][0-9.]*$|^\[|^\{|^\(|^`|^Syntax Error/)) {
+  let hide = 0;
+  if ( data.match(/^Unforgeable|^bundle|^@|^Nil$|^\(|^"|^[0-9.][0-9.]*$|^\[|^\{|^\(|^`|^Syntax Error/)) { // if stdout data
      data =  data.replace(/Unforgeable\(0x([0-9a-z]{6})[^)]*\)/g,'<$1..>');
      console.log("log: "+data);
      if ( data.match(/\["#define /) ) {
+       hide = 1;
        let matches = data.match(/(#define[^"]*)", (.*)\]/);
        exec( "echo '"+matches[1]+' '+matches[2]+"' >>global.h");
      } 
@@ -38,15 +41,16 @@ tail.on("line", function(data) {
          });
        }
      }
+     hide = data.match(/^"locker.get\(...\)"|^\(?\["debug:|^Error: .*: Unrecognized interpreter errorError: coop.rchain.rholang.interpreter.errors$LexerError: Illegal Character <$>/) ? 2:hide;
      if ( currentMessage ) {
-	currentMessage.channel.send(data);
+       hide<=debug ? currentMessage.channel.send(data):0;
        if (data.match(/^CostAccount\([0-9]*,Cost\([0-9]*\)\)/)){
          console.log("done.");
          lastMessage = currentMessage;
          currentMessage = null;
      }
      } else if ( lastMessage ) { //TODO this sould report to a user by DB matching reportto:, useris
-       lastMessage.channel.send(data);
+       hide<=debug ? lastMessage.channel.send(data):0;
        currentMessage = lastMessage
      }
    }
@@ -104,7 +108,7 @@ client.on('message', msg => {
     if (content.match(/^```.*/)) {
        content = content.substring(/\r|\n/.exec(content).index+1,content.length-4)
     }
-    if (!msg.author.bot && content.match(/^rholang/i)) {
+    if (!msg.author.bot && content.match(/^rholang/i)) { // not working
         let dir;
 	const randid = Math.random().toString().substring(2);
 	var auxmsg = "";
@@ -155,6 +159,10 @@ client.on('message', msg => {
 		"See the rholang tutorial at https://developer.rchain.coop/tutorial"];
             msg.reply(answers[n]);
 	}
+    }
+    else if (content.match(/^debug: /)) {
+      debug = parseInt(content.substring(content.match(/ /).index));
+      debug ? msg.channel.send("Debug level "+debug+" on."): msg.channel.send("Debugging off.");
     }
     else if (content.match(/^define:/)) {
       if (! content.match(/^define:\s*\$/) ) {
@@ -269,8 +277,10 @@ client.on('message', msg => {
 		 }
 	       })
 	     }
-	//	msg.reply(stdout.substring(0,500)+"\n...\n"+stdout.substring(stdout.length-500));
-             msg.reply(stdout.substring(0,stdout.length-0));
+             if ( stdout.match(/^Error: /) ) {
+	       msg.reply(stdout.match(/..........: (.*)/)[1]);
+	     }
+             if ( debug > 0 ) msg.reply(stdout.substring(0,stdout.length-0));
            } else {
              msg.reply(stderr);
            }
