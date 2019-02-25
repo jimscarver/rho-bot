@@ -16,22 +16,42 @@ const Tail = require('tail').Tail;
 const tail = new Tail("/home/rchain/rnode.log");
  
 var currentMessage;
+var lastMessage;
 tail.on("line", function(data) {
   if ( data.match(/^Unforgeable|^bundle|^@|^Nil$|^\(|^"|^[0-9.][0-9.]*$|^\[|^\{|^\(|^`|^Syntax Error/)) {
-     data =  data.replace(/Unforgeable\((........)[^}]*\)/g,'<$1..>');
+     data =  data.replace(/Unforgeable\(0x([0-9a-z]{6})[^)]*\)/g,'<$1..>');
      console.log("log: "+data);
-     if ( currentMessage ) {
-	currentMessage.reply(data);
-       if ( data.match(/\[\"#define /) ) {
-	  var matches = data.match(/(#define[^"]*)", (.*)\]/);
-	  //currentMessage.reply(matches[1]+' '+matches[2]);
-	  exec( "echo '"+matches[1]+' '+matches[2]+"' >>global.h");
-	  //console.log("define:"+data.match(/^(#define[^"]*)", (.*)\]/));
+     if ( data.match(/\["#define /) ) {
+       let matches = data.match(/(#define[^"]*)", (.*)\]/);
+       exec( "echo '"+matches[1]+' '+matches[2]+"' >>global.h");
+     } 
+     else {  let match = data.match(/^\["event:", "at:", "([^"]*)", "([0-9]*)"\]/);
+       if ( match ) {
+         console.log("echo ./trigger.sh "+match[2]+"|at "+match[1]+" >/tmp/at.out 2>&1");
+         exec("echo ./trigger.sh "+match[2]+"|at "+match[1]+" >/tmp/at.out",
+	   function(err, stdout, stderr) {
+           if ( ! err ) {
+             //currentMessage.channel.send(":\n"+stdout.substring(0,1900));
+           } else {
+                currentMessage.channel.send("error:"+stderr);
+           }
+         });
        }
      }
-  }
+     if ( currentMessage ) {
+	currentMessage.channel.send(data);
+       if (data.match(/^CostAccount\([0-9]*,Cost\([0-9]*\)\)/)){
+         console.log("done.");
+         lastMessage = currentMessage;
+         currentMessage = null;
+     }
+     } else if ( lastMessage ) { //TODO this sould report to a user by DB matching reportto:, useris
+       lastMessage.channel.send(data);
+       currentMessage = lastMessage
+     }
+   }
 });
-tail.unwatch()
+//tail.unwatch()
  
 tail.on("error", function(error) {
   console.log('ERROR: ', error);
@@ -69,7 +89,6 @@ client.on('message', msg => {
     }
 });
 client.on('message', msg => {
-  currentMessage = msg;
   console.log(msg.author.username+": "+msg.content);
   let content = msg.content;
   let repeat = true;
@@ -204,7 +223,7 @@ client.on('message', msg => {
 	     if ( ! rho.match(/\n./) ) { // add new lines to code without any
 	       rho = rho.replace(/([^ ])  /g,"$1\n  ")
 	     }
-             msg.reply("```scala\n"+rho+"\n```");
+             msg.reply("```scala\n-> define: "+rho+"\n```");
            } else {
                 msg.reply("error:"+stderr);
            }
@@ -213,15 +232,18 @@ client.on('message', msg => {
 
 
     else if (content.match(/^eval:/i)) {
+        currentMessage = msg;
         tail.watch(); // turn on reporting log output as msg.reply
         const author = msg.author.username;
          let rholang = '#define $myprivkey "'+msg.author.id.substring(10)+"\"\n"+
 	   '#define $mypubkey "dead'+msg.author.id.substring(10)+"\"\n"+
 	   '#define $myusername "'+msg.author.username.replace(" ","_")+"\"\n"+
+	   '#define $_messageid "'+msg.id+"\"\n"+
+	   '#define $_authorid "'+msg.author.id+"\"\n"+
 	   content.substring(5)+"\n";
         console.log(rholang);
         //let rholang =  content.substring(5);
-	fs.writeFile("/tmp/"+author+".rhox", rholang, function(err) {
+	      fs.writeFile("/tmp/"+author+".rhox", rholang, function(err) {
          if(err) {
           return console.log(err);
          }
@@ -243,7 +265,7 @@ client.on('message', msg => {
                  if(err) {
                   return console.log(err);
                  } else {
-		   msg.reply((""+rholang).match(/(\$[a-zA-Z_0-9]*)/)[1]+" undefined");
+		   msg.reply((""+rholang).match(/(\$[a-zA-Z_0-9]*)/)[1]+" undefined or wrong number of args.");
 		 }
 	       })
 	     }
@@ -252,7 +274,7 @@ client.on('message', msg => {
            } else {
              msg.reply(stderr);
            }
-           tail.unwatch();
+           //tail.unwatch();
         });
       });
     }

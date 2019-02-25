@@ -1,0 +1,15 @@
+```scala
+define: $mylocker2($code)  new lockerCh, itemsCh, $stdout, $lookup in {
+  lookup!($locker_%%$myusername, *lockerCh) | 
+  for(_mylocker <- lockerCh) {
+     _mylocker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |
+     stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) |
+     for (@_locker <- itemsCh) {
+     match _locker {
+       {"peek": *_peek, "receive": *_receive, "inbox": *_inbox} => {
+         $code
+       }
+       _ => stdout!(["error: mailbox not found in locker.",_locker])
+     }
+} } }
+```

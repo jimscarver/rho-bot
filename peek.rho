@@ -1,5 +1,5 @@
-#define $type "chat"
-#define $subtype "jimscarver"
+#define $type "event:"
+#define $subtype "at:"
 #define $return stdout
 new lockerCh, itemsCh, $stdout, $lookup in { 
   lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) { 
