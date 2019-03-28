@@ -105,7 +105,7 @@ stdout!(["message", message]) |
 } |
 new capabilities, ack, ack1, message, uriCh, ret, $insertArbitrary in {
   stdout!("hello world") |
-  insertArbitrary!(*Inbox, *uriCh)|
+  insertArbitrary!(bundle+{*Inbox}, *uriCh)|
   for (uri <- uriCh) {
     stdout!(["#define $Inbox", *uri])
   } |

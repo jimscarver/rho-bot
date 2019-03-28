@@ -1,0 +1,54 @@
+new Community, commMap, stdout(`rho:io:stdout`), lookup(`rho:registry:lookup`), 
+insertArbitrary(`rho:registry:insertArbitrary`), ret, ack in {
+/*    insertArbitrary!(*Community,*ret) |
+    for ( uri <- ret ) {
+       stdout!(["#define $Community",*uri])
+    } |
+*/
+    commMap!({}) |
+    contract Community (@"new", @name, return) = {
+        new infoCh in {
+            for (@comms <- commMap ) {
+                if ( comms.get(name) != Nil ) {
+                    stdout!("error: community with that name already exists") |
+                    commMap!(comms) |
+                    return!(Nil)
+                } else {
+                  lookup!($Directory,*ret) |
+                  for ( Directory <- ret ) {
+                    //stdout!(["got directory", *Directory]) |
+                    Directory!(*ret) |
+                    for ( @{dir /\ {"read": read, "write": write, "grant": grant, ..._ }} <- ret ) {
+                      commMap!(comms.union({name: *infoCh})) |
+                      infoCh!({"name": name}) |
+                        return!({"info": *infoCh, "read": read, "write": write, "grant": grant})
+                   }
+                 }
+              }
+            }
+          }
+      } |
+    contract Community (@"lookup", @name, return) = {
+        for ( @{map /\  {name: *infoCh, ..._}} <- commMap ) {
+          commMap!(map) |
+          for ( info <- infoCh ) {
+            //stdout!(*info) |
+            infoCh!(*info) |
+            return!(*info)
+          }
+        }
+      } |
+    contract Community (@"lookup", return) = {
+        for ( @map <- commMap ) {
+          //stdout!(map) |
+          commMap!(map) |
+          return!(map)
+        }
+    } |
+    Community!("new","test", *ret) |
+    for ( @{"info": infoCh, "read": read, "write": write, "grant": grant} <- ret ) {
+      stdout!("got it") |
+      Community!("lookup","test",*stdout) |
+      Community!("lookup",*stdout) 
+    }
+}

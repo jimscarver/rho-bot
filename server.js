@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const grpc = require('grpc');
-var sys = require('sys')
+var sys = require('util')
 var exec = require('child_process').exec;
 var fs = require('fs');
 var matchRecursive = require("match-recursive");
@@ -23,20 +23,27 @@ tail.on("line", function(data) {
   if ( data.match(/^Unforgeable|^bundle|^@|^Nil$|^\(|^"|^[0-9.][0-9.]*$|^\[|^\{|^\(|^`|^Syntax Error/)) { // if stdout data
      data =  data.replace(/Unforgeable\(0x([0-9a-z]{6})[^)]*\)/g,'<$1..>');
      console.log("log: "+data);
-     if ( data.match(/\["#define /) ) {
-       hide = 1;
+     if ( data.match(/\["#define \$/) ) {
+       hide = 0;
        let matches = data.match(/(#define[^"]*)", (.*)\]/);
        exec( "echo '"+matches[1]+' '+matches[2]+"' >>global.h");
      } 
-     else {  let match = data.match(/^\["event:", "at:", "([^"]*)", "([0-9]*)"\]/);
+     else if (  data.match(/^\["event:",/)) {  
+       let match = data.match(/^\["event:", "at:", "([^"]*)", "([0-9]*)"\]/);
        if ( match ) {
          console.log("echo ./trigger.sh "+match[2]+"|at "+match[1]+" >/tmp/at.out 2>&1");
          exec("echo ./trigger.sh "+match[2]+"|at "+match[1]+" >/tmp/at.out",
-	   function(err, stdout, stderr) {
+	         function(err, stdout, stderr) {
            if ( ! err ) {
-             //currentMessage.channel.send(":\n"+stdout.substring(0,1900));
-           } else {
-                currentMessage.channel.send("error:"+stderr);
+             debug > 0 ? currentMessage.channel.send(stderr):0;
+           }
+         });
+       } else {
+         match = data.match(/^\["event:", "trigger:", "([0-9]*)"\]/);
+         exec("echo ./trigger.sh "+match[2]+" >/tmp/trigger.out",
+	         function(err, stdout, stderr) {
+           if ( ! err ) {
+             currentMessage.channel.send("error:"+stderr);
            }
          });
        }
@@ -44,11 +51,6 @@ tail.on("line", function(data) {
      hide = data.match(/^"locker.get\(...\)"|^\(?\["debug:|^Error: .*: Unrecognized interpreter errorError: coop.rchain.rholang.interpreter.errors$LexerError: Illegal Character <$>/) ? 2:hide;
      if ( currentMessage ) {
        hide<=debug ? currentMessage.channel.send(data):0;
-       if (data.match(/^CostAccount\([0-9]*,Cost\([0-9]*\)\)/)){
-         console.log("done.");
-         lastMessage = currentMessage;
-         currentMessage = null;
-     }
      } else if ( lastMessage ) { //TODO this sould report to a user by DB matching reportto:, useris
        hide<=debug ? lastMessage.channel.send(data):0;
        currentMessage = lastMessage
@@ -261,8 +263,8 @@ client.on('message', msg => {
            "sed 's/\\%\\%\"\\([^\"]*\\)\"/\\1/g;s/\"~~\"/\\n/g'|"+
            "cat global.h end.h -|cpp 2>cpperrors2|sed -n '/^#/d;/^_end_$/,$p'|tee lasteval|"+
            "tail +2 >'/tmp/"+author+".rho';"+
-           "rnode eval '/tmp/"+author+".rho'|"+
-           "sed '1,3d;s/Deployment cost: //;/^Storage Contents:/{x;q}'";
+           "rnode eval '/tmp/"+author+".rho' 2>&1|"+
+           "sed '1,3d;/^Storage Contents:/{x;q}'";
          console.log(bash);
          dir = exec(bash,
          //dir = exec(" rnode eval /tmp/"+author+".rho|sed '2,3d;/^Storage Contents:/{x;q}'", 
@@ -277,7 +279,11 @@ client.on('message', msg => {
 		 }
 	       })
 	     }
-             if ( stdout.match(/^Error: /) ) {
+             else if ( stdout.match(/^Deployment cost: /) ) {
+               msg.reply(stdout);
+               currentMessage=null;
+             }
+             else if ( stdout.match(/^Error: /) ) {
 	       msg.reply(stdout.match(/..........: (.*)/)[1]);
 	     }
              if ( debug > 0 ) msg.reply(stdout.substring(0,stdout.length-0));
@@ -316,7 +322,7 @@ client.on('message', msg => {
 	//                  timestamp: new Date().valueOf()};
         msg.reply(`HELLO ${msg.author.username} id = ${msg.author.id}`);
     }
-    else if (content.match(/^[a-zA-Z0-9_-]*:(\s|$)/) && !msg.author.bot) {
+    else if (content.match(/^[a-z][a-zA-Z0-9_-]*:(\s|$)/) && !msg.author.bot) {
       const matches = content.match(/(^[^:]*): (.*)/);
       if (matches) {
         content = "eval: $"+matches[1]+'('+matches[2]+')';

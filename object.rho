@@ -1,0 +1,19 @@
+// Object capability wrapper proxy
+// prevents direct access to object model
+new Object in {
+  contract Object(@class, @instance, ret) = {
+    new this, meta in {
+      ret!(this) |
+      contract this(@arg) = {
+        class!(instance, arg)
+      }
+      contract this(@arg, arg2) = {
+        class!(instance, arg, arg2)
+      }
+      contract this(@arg, arg2, arg3) = {
+        class!(instance, arg, arg2, arg3)
+      }
+    }
+  } |
+  Nil
+}
