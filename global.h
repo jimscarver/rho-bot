@@ -22,7 +22,6 @@
 #define  $updateinbox new inboxCh, capabilities, ret, $stdout, $lookup, $insertArbitrary in {   lookup!($Inbox, *inboxCh) |   for (inbox <- inboxCh) {     inbox!(*capabilities) |     for (receive, send, peek <- capabilities) {       $peek(*inboxCh) |       for (oldmail <- inboxCh) {         stdout!(["saving oldmail: ",*oldmail]) |         send!(*oldmail) |         lookup!($locker_%%$myusername, *ret) |         for (locker <- ret) {           stdout!(["#define $locker_nonce_" ++ $myusername, $locker_nonce_%%$myusername + 2]) |           locker!("update", $myprivkey.hexToBytes(),$locker_nonce_%%$myusername + 1,             {"inbox": *send, "receive": *receive, "peek": *peek}, *stdout, *ret) |           for (_ <- ret) {             insertArbitrary!(*send,*ret)|             for (uri <- ret) {               stdout!(["#define $inbox_" ++ $myusername, *uri])             }           }         }       }     }   } }
 #define  $double($x) 2*$x
 #define  $this that"~~"the "~~"other
-#define $Locker `rho:id:djbh4ogpqc7fn9tp5ahz6kpuonmtqbype11uycf75fgnrdgz6dj496`
 #define  $stdnames lookup(`rho:registry:lookup`), insertArbitrary(`rho:registry:insertArbitrary`), stdout(`rho:io:stdout`), ack, return
 #define  $stdout stdout(`rho:io:stdout`)
 #define  $define($name,$value) stdout!(["#define " ++ $name, $value])
@@ -64,10 +63,7 @@
 #define  $updateinbox new inboxCh, capabilities, ret, $stdout, $lookup, $insertArbitrary in {   lookup!($Inbox, *inboxCh) |   for (inbox <- inboxCh) {     inbox!(*capabilities) |     for (receive, send, peek <- capabilities) {       $peek(*inboxCh) |       for (oldmail <- inboxCh) {         stdout!(["saving oldmail: ",*oldmail]) |         send!(*oldmail) |         lookup!($locker_%%$myusername, *ret) |         for (locker <- ret) {           stdout!(["#define $locker_nonce_" ++ $myusername, $locker_nonce_%%$myusername + 2]) |           locker!("update", $myprivkey.hexToBytes(),$locker_nonce_%%$myusername + 1,             {"inbox": *send, "receive": *receive, "peek": *peek}, *stdout, *ret) |           for (_ <- ret) {             insertArbitrary!(*send,*ret)|             for (uri <- ret) {               stdout!(["#define $inbox_" ++ $myusername, *uri])             }           }         }       }     }   } }
 #define  $double($x) 2*$x
 #define  $this that"~~"the "~~"other
-#define $Locker `rho:id:djbh4ogpqc7fn9tp5ahz6kpuonmtqbype11uycf75fgnrdgz6dj496`
-#define $locker_jimscarver `rho:id:utjdj4urgdf99t9qnrywt3rtdaijapw783mktoqndpfzxf3x3tw488`
 #define  $makemylocker new lookupCh, stdout(`rho:io:stdout`),"~~"      lookup(`rho:registry:lookup`), insert(`rho:registry:insertArbitrary`), insCh in {"~~"  lookup!($Locker, *lookupCh) |"~~"  for(Locker <- lookupCh) {"~~"    stdout!(["found Locker",*Locker]) |"~~"    new capabilities, ret, inboxCh, lockerCh, uriCh in {"~~"      Locker!($mypubkey.hexToBytes(), *lockerCh) | for(locker <- lockerCh) {"~~"stdout!("made Locker") |"~~"        insert!(*locker, *uriCh) | for (@uri <- uriCh) {"~~"          stdout!(["#define $locker_" ++ $myusername, uri])"~~"        } |"~~"        lookup!($Inbox, *inboxCh) |"~~"        for (inbox <- inboxCh) {"~~"          inbox!(*capabilities) |"~~"          for (receive, send, peek <- capabilities) {"~~"            stdout!(["#define $locker_nonce_" ++ $myusername, 1]) |"~~"            locker!("update", $myprivkey.hexToBytes(),0, {"inbox": *send, "receive": *receive, "peek": *peek}, *stdout, *ret) |"~~"            for (_ <- ret) {"~~"              insert!(*send,*ret)|"~~"              for (uri <- ret) {"~~"                stdout!(["#define $inbox_" ++ $myusername, *uri])"~~"              }"~~"            }"~~"          }"~~"        }"~~"      }"~~"    }"~~"  }"~~"}
-#define $locker_jimscarver `rho:id:utjdj4urgdf99t9qnrywt3rtdaijapw783mktoqndpfzxf3x3tw488`
 #define  $makemylocker new lookupCh, stdout(`rho:io:stdout`),"~~"      lookup(`rho:registry:lookup`), insert(`rho:registry:insertArbitrary`), insCh in {"~~"  lookup!($Locker, *lookupCh) |"~~"  for(Locker <- lookupCh) {"~~"    stdout!(["found Locker",*Locker]) |"~~"    new capabilities, ret, inboxCh, lockerCh, uriCh in {"~~"      Locker!($mypubkey.hexToBytes(), *lockerCh) | for(locker <- lockerCh) {"~~"stdout!("made Locker") |"~~"        insert!(*locker, *uriCh) | for (@uri <- uriCh) {"~~"          stdout!(["#define $locker_" ++ $myusername, uri])"~~"        } |"~~"        lookup!($Inbox, *inboxCh) |"~~"        for (inbox <- inboxCh) {"~~"          inbox!(*capabilities) |"~~"          for (receive, send, peek <- capabilities) {"~~"            stdout!(["#define $locker_nonce_" ++ $myusername, 1]) |"~~"            locker!("update", $myprivkey.hexToBytes(),0, {"inbox": *send, "receive": *receive, "peek": *peek}, *stdout, *ret) |"~~"            for (_ <- ret) {"~~"              insert!(*send,*ret)|"~~"              for (uri <- ret) {"~~"                stdout!(["#define $inbox_" ++ $myusername, *uri])"~~"              }"~~"            }"~~"          }"~~"        }"~~"      }"~~"    }"~~"  }"~~"}
 #define  $foreach($collection,$code) new $stdout, _loop in {"~~"contract _loop ( @_map ) = {"~~"  match  _map {"~~"    {} => Nil"~~"    { _key: _value, ..._tail } => {"~~"      $code |"~~"      _loop!(_tail)"~~"    }"~~"    []  => Nil"~~"    [_value, ..._tail] /\ _key => {"~~"      $code |"~~"      _loop!(_tail)"~~"    }"~~"    Set() => Nil"~~"    Set(_value, ..._tail) /\ _key => {"~~"      $code |"~~"      _loop!(_tail)"~~"    }"~~"    /* _ /\ _name => {for ( @collection <- @_name ) { _loop!(collection) } } */"~~"  }"~~"} | _loop!( $collection )"~~"}
 #define  $receive($type,$subtype_return...) new lockerCh, itemsCh, $stdout, $lookup in {"~~"  lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) {"~~"    locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |"~~"    for (@items  <- itemsCh) {"~~"      if ( items.get("receive") == Nil ) {"~~"        stdout!("you do not have a receive channel for your inbox")"~~"      } else {"~~"        @{items.get("receive")}!($type, $subtype_return)"~~"      } |"~~"      stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])"~~"} } }
@@ -77,7 +73,6 @@
 #define $inbox_GaryC `rho:id:wuo5rztqroa76qeqhprgswdch9rkggrbpbb1qxq4tpq1a8rk3k4nid`
 #define $locker_tgrospic `rho:id:tr7twmx38b9qq5czqzjzgapbry53yknkstsr1qfi6axwnngapnwq9o`
 #define $inbox_tgrospic `rho:id:aj4d9kspsg3wib5af6hc7wuqbdgm1w89854rf535bjut1kxj9byyrc`
-#define $Inbox `rho:id:job5j5zmgonj5c3a434a46nd39a8wzfy1cdyi49ts4ze79k9s1nrju`
 #define $locker_nonce_tgrospic 5
 #define  $share($username, $type, $subtype)  new return in {"~~"  $peek($type, $subtype, *return) |"~~"  for ( @[*list] <- return) {"~~"    $send($username, $type, $subtype, *list)"~~"  }"~~"}
 #define $locker_nonce_GaryC 8
@@ -116,8 +111,17 @@
 #define $inbox_momchilov `rho:id:oyw5hqousp1au8y96xun96xegu748wk9rw6pk74xn9om7qcfqjrtno`
 #define  $allowtovote($user,$ballot) new ret in {     $peek("ballot",$ballot,*ret) |"~~"  for ( @[{"admin": admin, ..._}, ..._] <- ret ) {"~~"        @admin!("giveRightToVote", $user, *ret) |"~~"    for (@vote <- ret) {"~~"            $send($user,"vote", $ballot, vote)    "~~"    }}"~~"}
 #define $locker_nonce_momchilov 9
-#define $locker_nonce_jimscarver 176
 #define $Ballot `rho:id:3pxdr7yzgfomdnzedyiet64qyqjz87tfkt31ico8hb8watp6bp5pes`
 #define $getTicket `rho:id:k7hcncc35jrygdrwzactfp3sxtfqhigr18hy6btk7bs1dsbkqsbx5j`
-#define $Directory `rho:id:diimet76mgff5mzqfeqga7dzu7hbqm98j756hny9576w9bwxguqsfc`
 #define $Community `rho:id:c6oakwbqkfgyya6aobtxmqgx33t5iftysnqmoaugnhzrg9mekor4ym`
+#define $locker_jimscarver `rho:id:e5rgmynksxbp4khwn8yi6uzpemfymjytf69np5tacw566oga95yywz`
+#define $locker_nonce_jimscarver 177
+#define $Inbox `rho:id:gkrjusfzhjo81auedk3i54qhwa1b5a6crc95mxu45a75q8iyy83jcj`
+#define $Inbox `rho:id:gkrjusfzhjo81auedk3i54qhwa1b5a6crc95mxu45a75q8iyy83jcj`
+#define $Locker `rho:id:ww1g4a351ahgtztq6zfiey6bt1dswrznw6f3dct59fesqupnu5su8g`
+#define $Locker `rho:id:ww1g4a351ahgtztq6zfiey6bt1dswrznw6f3dct59fesqupnu5su8g`
+#define $Directory `rho:id:f9kmasb4g1t8a4o5dtbxmdnqdzjpoisyy6kdtjf8raxwes3iy3rbz9`
+#define $Directory `rho:id:mzghhmzqr8x5zjj8n3h6xa11ndt7cm1rawmier4atqo1argbb5i9xx`
+#define $Directory `rho:id:qsabcreprma4iq4hbfwgh7cnuw3kpddkrxdmbx7ejbtnoyz5qj1tf3`
+#define $Directory `rho:id:5q3dztqz91soijtjjzxnna9e5ajywhnbgt6eamimojycb17gpwf5sk`
+#define $Community `rho:id:imnmf6wdiog49xzgiukbchiwuo1dm7gf7r1168ux6g1q141r8u99mr`

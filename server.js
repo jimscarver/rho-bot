@@ -297,7 +297,7 @@ client.on('message', msg => {
     else if (content.match(/^deploy:/i)) {
         const author = msg.author.username;
         let rholang = content.substring(8);
-        dir = exec(" rnode deploy --from \"0x1\" --phlo-limit 100000000 --phlo-price 1 --nonce 0 /tmp/"+author+".rho", 
+        dir = exec(" rnode deploy --phlo-limit 10000000000 --phlo-price 1 /tmp/"+author+".rho", 
           function(err, stdout, stderr) {
             if (err) {
                 msg.reply(stderr);
