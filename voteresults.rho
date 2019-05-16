@@ -1,7 +1,7 @@
 #define $ballot "color"
 new ret, $stdout in { 
   $peek("ballot",$ballot,*ret) |
-  for ( @[{"getWinner": results, ..._}, ..._] <- ret ) {
+  for ( @[{"tally": results, ..._}, ..._] <- ret ) {
     @results!(*stdout)
   }
 }
