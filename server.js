@@ -4,7 +4,7 @@ const grpc = require('grpc');
 var sys = require('util')
 var exec = require('child_process').exec;
 var fs = require('fs');
-var matchRecursive = require("match-recursive");
+//var matchRecursive = require("match-recursive");
 
 require('dotenv').config();
 const {RNode, RHOCore, logged} = require('rchain-api');
@@ -15,7 +15,7 @@ const Tail = require('tail').Tail;
  
 const tail = new Tail("/home/rchain/rnode.log");
  
-var debug = 0;
+var debug = 3;
 var currentMessage;
 var lastMessage;
 tail.on("line", function(data) {
@@ -95,7 +95,7 @@ client.on('message', msg => {
     }
 });
 client.on('message', msg => {
-  console.log(msg.author.username+": "+msg.content);
+  console.log("message: "+msg.channel.name+": "+msg.author.username+": "+new Date().toISOString()+" "+msg.content);
   let content = msg.content;
   let repeat = true;
   let retry = 0;
@@ -241,7 +241,7 @@ client.on('message', msg => {
     }
 
 
-    else if (content.match(/^eval:/i)) {
+    else if (content.match(/^eval:\s\s*/i)) {
         currentMessage = msg;
         tail.watch(); // turn on reporting log output as msg.reply
         const author = msg.author.username;

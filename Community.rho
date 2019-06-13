@@ -1,27 +1,28 @@
 new Community, commMap, stdout(`rho:io:stdout`), lookup(`rho:registry:lookup`), 
-insertArbitrary(`rho:registry:insertArbitrary`), ret, ack in {
-    insertArbitrary!(*Community,*ret) |
-    for ( uri <- ret ) {
+insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
+    insertArbitrary!(*Community,*uriCh) |
+    for ( uri <- uriCh ) {
        stdout!(["#define $Community",*uri])
     } |
     commMap!({}) |
-    contract Community (@"new", @name, return) = {
+    contract Community (@"new", @name, inbox, return) = {
         new admin, methods, userlist, infoCh, ret in {
             userlist!([]) | methods!({}) |
+	          infoCh!({}) |
+            stdout!("creating community.") |
             for (@comms <- commMap ) {
                 if ( comms.get(name) != Nil ) {
                     stdout!("error: community with that name already exists") |
                     commMap!(comms) |
                     return!(Nil)
                 } else {
-                  stdout!("creating community.") |
                   lookup!($Directory,*ret) |
                   for ( Directory <- ret ) {
                     stdout!(["got directory", *Directory]) |
                     Directory!(*ret) |
                     for ( @{"read": *read, "write": *write, "grant": *grant, ..._ } <- ret ) {
                       commMap!(comms.union({name: *infoCh})) |
-                      infoCh!({"name": name}) |
+                      infoCh!({"name": name, "request": *inbox}) |
                       return!({"admin": *admin, "read": *read, "write": *write, "grant": *grant}) |
                       contract admin(@"add info", @key, @value, return) = {
                         for (info <- infoCh) {
@@ -31,8 +32,11 @@ insertArbitrary(`rho:registry:insertArbitrary`), ret, ack in {
                       contract admin(@"add user", @username, @inbox, return) = {
                         //TODO see if already a member
                         for ( @list <- userlist) {
-                          userlist!(list.slice(1,list.length()) ++ username ++ list.nth(0)) |
-                          stdout!(list.slice(1,list.length()) ++ username ++ list.nth(0)) |
+                          if ( list.length() == 0 ) { userlist!([username]) }
+                          else {
+                            userlist!(list.slice(1,list.length()) ++ username ++ list.nth(0)) |
+                            stdout!(list.slice(1,list.length()) ++ username ++ list.nth(0))
+                          } |
                           write!(username, {"inbox": inbox, "delegate": list.nth(0)}, *stdout)
                         } |
                         grant!(username, *ret) |
@@ -46,8 +50,19 @@ insertArbitrary(`rho:registry:insertArbitrary`), ret, ack in {
               }
             }
           } |
+    contract Community (@"request", @name, return) = {
+        for ( @{map /\  {=name: *infoCh, ..._}} <- commMap ) {
+          commMap!(map) |
+          for ( @{info /\ {"request": *inbox, ..._ }}  <- infoCh ) {
+            //stdout!(*info) |
+            inbox!(["Community", "request", name])|
+            infoCh!(info) |
+            return!(info)
+          }
+        }
+      } |
     contract Community (@"lookup", @name, return) = {
-        for ( @{map /\  {name: *infoCh, ..._}} <- commMap ) {
+        for ( @{map /\  {=name: *infoCh, ..._}} <- commMap ) {
           commMap!(map) |
           for ( info <- infoCh ) {
             //stdout!(*info) |
@@ -63,14 +78,14 @@ insertArbitrary(`rho:registry:insertArbitrary`), ret, ack in {
           return!(map)
         }
     } |
-    Community!("new","test", *ret) |
-    Community!("new","test2", *ret) |
+    Community!("new","test", Nil, *ret) |
+    Community!("new","test2", Nil, *ret) |
     for ( @{"admin": admin, "read": read, "write": write, "grant": grant} <- ret; _ <- ret ) {
       stdout!("got em") |
       Community!("lookup","test",*stdout) |
       Community!("lookup","test2",*stdout) |
       Community!("lookup",*stdout) |
-      Community!("new","test", *stdout) |
+      //Community!("new","test", Nil, *stdout) |
       admin|("add user","jim","xxxxx", *ret) |
       for ( _ <- ret ) {
        Community!("lookup","test",*stdout) |
