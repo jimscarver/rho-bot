@@ -1,5 +1,5 @@
-#define $type "event:"
-#define $subtype "at:"
+#define $type "Community"
+#define $subtype "colab"
 #define $return stdout
 new lockerCh, itemsCh, $stdout, $lookup in { 
   lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) { 

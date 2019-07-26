@@ -32,12 +32,14 @@ insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
                       contract admin(@"add user", @username, @inbox, return) = {
                         //TODO see if already a member
                         for ( @list <- userlist) {
-                          if ( list.length() == 0 ) { userlist!([username]) }
-                          else {
-                            userlist!(list.slice(1,list.length()) ++ username ++ list.nth(0)) |
-                            stdout!(list.slice(1,list.length()) ++ username ++ list.nth(0))
-                          } |
-                          write!(username, {"inbox": inbox, "delegate": list.nth(0)}, *stdout)
+                          if ( list.length() == 0 ) { userlist!([username]) |
+                            write!(username, {"inbox": inbox, "delegate": Nil}, *stdout) |
+                            stdout!("first user being added")
+                          } else {
+                            userlist!(list.slice(1,list.length()) ++ [ username, list.nth(0)]) |
+                            write!(username, {"inbox": inbox, "delegate": list.nth(0)}, *stdout) |
+                            stdout!(list.slice(1,list.length()) ++ [username, list.nth(0)])
+                          }
                         } |
                         grant!(username, *ret) |
                         for ( updateself <- ret ) {
@@ -50,12 +52,12 @@ insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
               }
             }
           } |
-    contract Community (@"request", @name, return) = {
+    contract Community (@"request", @name, @userid, return) = {
         for ( @{map /\  {=name: *infoCh, ..._}} <- commMap ) {
           commMap!(map) |
           for ( @{info /\ {"request": *inbox, ..._ }}  <- infoCh ) {
             //stdout!(*info) |
-            inbox!(["Community", "request", name])|
+            inbox!(["Community", "request", name, userid])|
             infoCh!(info) |
             return!(info)
           }

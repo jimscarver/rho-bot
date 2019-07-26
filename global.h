@@ -74,8 +74,6 @@
 #define  $mylocker($code)  new lockerCh, itemsCh, $stdout, $lookup in {"~~"  lookup!($locker_%%$myusername, *lockerCh) |"~~"  for(_mylocker <- lockerCh) {"~~"     _mylocker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |"~~"     stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}]) |"~~"     for (@_locker <- itemsCh) {"~~"     match _locker {"~~"       {"peek": *_peek, "receive": *_receive, "inbox": *_inbox} => {"~~"         $code"~~"       }"~~"       _ => stdout!(["error: mailbox not found in locker.",_locker])"~~"     }"~~"} } }
 #define  $peek($types_return...) $mylocker("~~"        _peek!($types_return)"~~")
 #define  $readchat $receive("chat",*stdout)
-#define  $locker_dummyuser `rho:id:c6e643opwowg8k1hdawnexsmo37twucf3cuazsndtu9xgnrc4wfymu`
-#define  $inbox_dummyuser `rho:id:c7mfqadh6id74erjnd8bh1eb8qz91pnmner9zdx146i1yjg3dhguyy`
 #define  $print($expression) new $stdout in {stdout!($expression)}
 #define   $at($timespec,$code) new $stdout in {   $send("dummyuser","event:", $_messageid,  $code) |"~~"  stdout!(["event:", "at:", $timespec,  $_messageid])"~~"}
 #define   $readDir($name, $arg_ret...)  new _ret, $stdout in {   $peek("directory",$name,*_ret) |"~~"  for (@[dir] <- _ret ) {"~~"    @{dir.get("read")}!($arg_ret) "~~"  }}
@@ -89,7 +87,6 @@
 #define  $doForever("timespec", $code)  at: $timespec, $arg($code|$at($timespec,$code|$at($timespec,$code)))
 #define  $doForever("timespec", $code)  at: $timespec, $arg($code|$at($timespec,$code|))
 #define  $doForever("timespec", $code)  $at( $timespec, $arg($code|$at($timespec,$code|)))
-#define $locker_nonce_dummyuser 41
 #define $locker_yao `rho:id:sdm4y951fgmbtxihami14qo3zhsfxqi1wb4qw4xpgn7ut17ep6wsfy`
 #define $locker_nonce_yao 1
 #define $inbox_yao `rho:id:7xod9kw7kf7g97d3byetiyydf7arfc3afuro55ngqwzphcpebuwmm5`
@@ -122,7 +119,20 @@
 #define $locker_nonce_tonyprisca13 2
 #define $locker_nonce_GaryC 13
 #define $getTicket `rho:id:rxsmudwyqcjfjeq3qa5g378h5hsguhsoeoy3ine9qtebkrrsncoywb`
-#define   $addmember($community,$user) new $stdout, $lookup, ret, boxCh, ack in {   $peek("Community",$community,*ret )|"~~"  lookup!($inbox_%%$user,*boxCh)|"~~"  for ( @[{"admin": *admin, "read": *read, "write": *write, "grant": *grant}] <- ret; box <- boxCh ) {"~~"    admin!("add user", $user, *box, *ret) |"~~"    grant!($user,*ret) |"~~"    for (selfmod <- ret ) {"~~"      $send($user,"member",$community,{"read": *read, "selfmod": *selfmod})"~~"    }}}
-#define $Community `rho:id:ize75kwc1tbtu9tzbs4fza3hfbfmwg19ghfspcwkwjuo3xx95ygxwd`
-#define $locker_nonce_aviation_hacker 3
-#define $locker_nonce_jimscarver 12
+#define $locker_Atticbee `rho:id:w7cqy4ktfwirku9key8smka5qxto1rogjaatgcwg91ii5g8pt9hreh`
+#define $inbox_Atticbee `rho:id:x8j697reo67i8ihrhuwkgrjwkdkh3dey8k4em7ixc6o8c5msj5mkp9`
+#define $locker_nonce_Atticbee 3
+#define $locker_GSJ `rho:id:uswmor7y84miy5w415gu4agwh8t6dpecjr4rjbqszawiinds11wkat`
+#define $inbox_GSJ `rho:id:dwjwhkcdpps3hhee1f7y6myk6ogpwgfqn3q7adeickfk6z49k1kxdz`
+#define $locker_nonce_GSJ 2
+#define $locker_jonnydubowsky `rho:id:odwf51nbune8wj1m96g9t6cqqiux54kanpzxnpigi5xugs4qce1qch`
+#define $locker_nonce_jonnydubowsky 1
+#define $inbox_jonnydubowsky `rho:id:8qirhbrf4xuy4dfncty55fxjnwy4hq3tk4a8ocr8c7wzysbt5j51mt`
+#define  $newCommunity($name) new $stdout, $lookup, ret, ret2 in {"~~" lookup!($Community,*ret)|"~~" lookup!($inbox_%%$myusername,*ret2)|"~~" for ( C <- ret; box <- ret2) {"~~"  C!("new",$name, *box, *ret)|"~~"   for (caps <- ret) {"~~"    if ( *caps != Nil ) {"~~"     box!(["Community",$name,*caps],*stdout)"~~"   } else { stdout!("newCommunity " ++ $name ++ " failed")"~~"   }"~~"}}}
+#define   $addmember($community,$user)  new $stdout, $lookup, ret, boxCh, ack in {   $peek("Community",$community,*ret )|"~~"  lookup!($inbox_%%$user,*boxCh)|"~~"  for ( @[{"admin": *admin, "read": *read, "write": *write, "grant": *grant}] <- ret; box <- boxCh ) {"~~"    stdout!("adding user")|"~~"    admin!("add user", $user, *box, *ret) |"~~"    for (selfmod <- ret ) {"~~"       stdout!("user added") |"~~"      box!(["member",$community,{"read": *read, "selfmod": *selfmod}],*stdout)"~~"    }}}
+#define $locker_dummyuser `rho:id:6zgdeg67xa3oypctrd5wiweps6fqauwyizehpaqpi7fry56zneqeyn`
+#define $inbox_dummyuser `rho:id:4fyy5fka5bnnkjx3uewar9npcjdqkioefhrprtbk6mhod61rq16jtq`
+#define $locker_nonce_dummyuser 3
+#define $locker_nonce_aviation_hacker 14
+#define $Community `rho:id:iy5gsphbirrkk5urac6sri3dag8e67dmuy1udz6bmxtgzjzaxhww51`
+#define $locker_nonce_jimscarver 49

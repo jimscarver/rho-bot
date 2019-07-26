@@ -14,6 +14,17 @@ let myNode;
 const Tail = require('tail').Tail;
  
 const tail = new Tail("/home/rchain/rnode.log");
+const keybase = new Tail("/tmp/keybase.log");
+var KEYBASETO;
+keybase.on("line", function(data) {
+ if ( KEYBASETO ) {
+   let event = JSON.parse(data)
+   if ( event.type == 'chat' && event.msg.content.type == 'text') {
+     text = "keybase: "+event.msg.channel.name+': '+event.msg.sender.username+': '+event.msg.content.text.body
+     KEYBASETO.send(text);
+   }
+ }
+});
  
 var debug = 3;
 var currentMessage;
@@ -92,10 +103,19 @@ client.on('message', msg => {
     if (msg.content === 'ping') {
         console.log(msg);
         msg.reply('Pong!');
+    } else if (msg.content == 'keybase bridge start' ) {
+        keybase.watch(); // turn on reporting log output as msg.reply
+        KEYBASETO = msg.channel;
+        msg.channel.send('keybase bridge started.');
+    } else if (msg.content === 'keybase bridge stop') {
+        keybase.unwatch(); // turn on reporting log output as msg.reply
     }
 });
 client.on('message', msg => {
-  console.log("message: "+msg.channel.name+": "+msg.author.username+": "+new Date().toISOString()+" "+msg.content);
+if ( msg.content == -1 ) { console.log("ug"); /* console.log(msg)*/ } else {
+  console.log(msg.content);
+  console.log("message: "+msg.channel.name+": "+msg.author.username+": "+
+     new Date().toISOString()+" "+msg.content.replace(/\n/g,'\\n'));
   let content = msg.content;
   let repeat = true;
   let retry = 0;
@@ -286,7 +306,7 @@ client.on('message', msg => {
              else if ( stdout.match(/^Error: /) ) {
 	       msg.reply(stdout.match(/..........: (.*)/)[1]);
 	     }
-             if ( debug > 0 ) msg.reply(stdout.substring(0,stdout.length-0));
+             else if ( debug > 0 ) msg.reply(stdout.substring(0,stdout.length-0));
            } else {
              msg.reply(stderr);
            }
@@ -332,7 +352,7 @@ client.on('message', msg => {
       repeat = true; retry = retry + 1;
     }
   }
-});
+}});
 client.on('guildMemberAdd', member => {
     // Send the message to a designated channel on a server:
     const channel = member.guild.channels.find(ch => ch.name === 'general');

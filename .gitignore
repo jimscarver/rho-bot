@@ -3,8 +3,8 @@ cpp-out
 temp
 cpperr*
 last*
-x
-xx
+x.*
+xx.*
 *.rhox
 .env
 node_modules/
