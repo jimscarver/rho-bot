@@ -1,4 +1,4 @@
-#MacRhoLang @RHO-bot
+#MacRhoLang @RHO-bot (complete [google doc](https://docs.google.com/document/d/1mTUQwWV9zW5INaJekf-hrZoukWh8Gt8ggFwIxREp1vk/edit#heading=h.rcgqrt7cbij8))
 
 Chatbots have become a leading means of managing distributed systems. @RHO-bot in the CoLab discord chat allows us to interface to a rchain node (rhobot.net,soon to be on testnet) in a language we cooperatively define. We define macros of parameterized rholang snippets allowing them to be used like user defined commands, functions or variables generating code to be run on rchain. It employs discord identities to create toy private and public keys enabling demonstration of contracts running on rchain with simple command interface. E.g. testing voting contracts and getting community sentiment on discord without people needing to learn rholang:
 
