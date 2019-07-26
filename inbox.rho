@@ -24,7 +24,7 @@ contract Inbox(capabilities) = {
         }
       }
     } |
-    contract read(type,subtype,ret) = {
+    contract read(type,subtype, new_parameter,ret) = {
       //stdout!(["type",*type]) |
       for (items <- box) {
         match (*items) {
