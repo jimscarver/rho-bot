@@ -1,31 +1,35 @@
-#define $directory "testdir"
-#define $ballot "color"
-new lockerCh, ret, ret1, loop, $stdout, $lookup in { 
-  lookup!($locker_%%$myusername, *lockerCh) | for(locker <- lockerCh) { 
-    locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *ret) | 
-    for (@items  <- ret) { 
-      @{items.get("peek")}!("directory", $directory, *ret) |
+```scala
+define: $allowalltovote($community,$ballot) new lockerCh, ret, ret1, ret2, ret3, loop, $stdout, $lookup in {
+    lookup!($locker_%%$myusername, *lockerCh) |
+  for(locker <- lockerCh) {
+        locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *ret) |
+    for (@items  <- ret) {
+            @{items.get("peek")}!("member", $community, *ret) |
       @{items.get("peek")}!("ballot", $ballot, *ret1) |
-      for ( @[{"read": *read, ..._}, ..._] <- ret; 
-            @[{"chair": *chair, ..._}, ..._] <- ret1 ) {
+      for ( @[{"read": *read, ..._}, ..._] <- ret;  @[{"admin": *admin, ..._}, ..._] <- ret1 ) {
+        stdout!("adding users") |
         contract loop ( @map ) = {
           match  map {
-            {} => Nil
-            { username: *inbox, ...tail } => {
-              chair!("giveRightToVote", *ret) |
-              for (@vote <- ret) {
-                inbox!(["vote", $ballot, vote])
-              } |
-              loop!(tail)
-            }
+              {} => Nil
+             {  username: {"inbox": *inbox, "delegate": delegate, ..._}, ...tail } => {
+                  stdout!(["user",username]) |
+                  admin!("giveRightToVote", username, *ret2) |
+                 for (@vote <- ret2) {
+stdout!([username, "added"]) |
+                      inbox!(["vote", $ballot, vote], *stdout) |
+                      @vote!("delegate",delegate, *stdout)
+                 }|
+                 loop!(tail)
+             } 
+             somethingelse => stdout!(["somethingelse", somethingelse]) 
           }
-        } |
-        read!(*ret) |
-        for ( @members <- ret ) {
-          loop!(members)
-        }
-      } |
+        }|
+        read!(*ret3) |
+        for ( @members <- ret3 ) {
+                 stdout!(["keys",members.keys()]) |
+                 loop!(members)
+      }} |
       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])
-    }
-  }
+    }}
 }
+```

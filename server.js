@@ -31,7 +31,7 @@ var currentMessage;
 var lastMessage;
 tail.on("line", function(data) {
   let hide = 0;
-  if ( data.match(/^Unforgeable|^bundle|^@|^Nil$|^\(|^"|^[0-9.][0-9.]*$|^\[|^\{|^\(|^`|^Syntax Error/)) { // if stdout data
+  if ( data.match(/^Unforgeable|^bundle|^@|^Nil$|^\(|^"|^[0-9.][0-9.]*$|^Set|^\[|^\{|^\(|^`|^Syntax Error/)) { // if stdout data
      data =  data.replace(/Unforgeable\(0x([0-9a-z]{6})[^)]*\)/g,'<$1..>');
      console.log("log: "+data);
      if ( data.match(/\["#define \$/) ) {
@@ -317,7 +317,7 @@ if ( msg.content == -1 ) { console.log("ug"); /* console.log(msg)*/ } else {
     else if (content.match(/^deploy:/i)) {
         const author = msg.author.username;
         let rholang = content.substring(8);
-        dir = exec(" rnode deploy --phlo-limit 10000000000 --phlo-price 1 /tmp/"+author+".rho", 
+        dir = exec(" rnode deploy --phlo-limit 10000000000 --private-key 2f0d7408d28f39defd6eb5189bb2516e8088829548ca4f04a8ef5dfae013287a --phlo-price 1 /tmp/"+author+".rho", 
           function(err, stdout, stderr) {
             if (err) {
                 msg.reply(stderr);

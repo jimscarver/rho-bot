@@ -12,21 +12,22 @@ in {
   |
 
   // See example / demo below.
-  contract Ballot(@{proposalNames /\ Set(hd, ...tail)}, return) = {
+  //contract Ballot(@{proposalNames /\ Set(hd, ...tail)}, return) = {
+  contract Ballot(@proposalNames , return) = {
     new admin, tally, voterCh in {
+      stdout!("creating ballot") |
       return!(bundle+{*admin}, bundle+{*tally}) |
-
        voterCh!({}) |
 
       contract admin(@"giveRightToVote", @name, return) = {
         // voter names must be unique, a public key is suggested.
         new voter, voteCh, delegateCh in {
-          //trace!({"admin": *admin, "gives right to vote": *voter}) |
+          trace!({"admin": *admin, "gives right to vote": *voter}) |
           voteCh!(Nil) |
           delegateCh!(Nil) |
 //TODO assign default deligate if any
           for ( @voters <- voterCh ) {
-            //trace!(voters.union({name: *voter})) |
+            //trace!(voters.union({name: *voter}).keys()) |
             voterCh!(voters.union({name: *voter}))
           } |
           return!(bundle+{*voter}) |
@@ -46,33 +47,40 @@ in {
             }
           } |
           contract voter(@"choice", @priorDelegates, return) = {
+            trace!(name) |
             for ( @vote <- voteCh ) {
               voteCh!(vote) | 
               if ( vote == Nil ) {
-                for ( @delegate <- delegateCh ) {
+                for ( @delegate <- delegateCh; @voters <- voterCh ) {
                   delegateCh!(delegate) |
-                  if (delegate == Nil or priorDelegates.contains(delegate) ) {
+                  voterCh!(voters) |
+                  //trace!(voters) |
+                  if (delegate == Nil or priorDelegates.contains(delegate) or voters.get(delegate) == Nil ) {
                    return!(Nil)
                   } else {
-                    @delegate!("choice", priorDelegates.add(delegate), *return) 
+                    trace!([name ++ " -> " ++ delegate, voters.get(delegate)]) |
+                    @{voters.get(delegate)}!("choice", priorDelegates.add(delegate), *return) 
                   }
                 } 
               } else {
+                trace!(name ++ " " ++ vote) |
                 return!(vote)
               }
             }
           } |
-          contract voter(@"delegate", @name, ack) = {
+          contract voter(@"delegate", @delegate, ack) = {
           // name s.b. unique, public key suggested.
-          for ( @voters <- voterCh; @prior <- delegateCh ) {
-            voterCh!(voters) |
-            if ( voters.contains(name) ) {
-              ack!("found.") |
-              delegateCh!(voters.get(name))
-            } else {
-              ack!("not found.") |
-              delegateCh!(prior)
-            }
+            for ( @prior <- delegateCh; @voters <- voterCh ) {
+              voterCh!(voters) |
+              if ( voters.get(delegate) == Nil ) {
+                trace!(delegate ++ " in not a voter on this ballot.") |
+                ack!(false) |
+                delegateCh!(prior)
+              } else {
+                trace!(name ++ " delegates to " ++ delegate) |
+                ack!(true) |
+                delegateCh!(delegate)
+              }
           }
         }
       }
@@ -81,7 +89,7 @@ in {
           new countCh, loop in { countCh!({}) |
             //trace!("tally") |
             for ( @voters <- voterCh ) {
-              //trace!(voters) |
+              trace!(voters) |
              voterCh!(voters) |
              loop!(voters, *return) |
               
@@ -90,7 +98,9 @@ in {
               //trace!("loop") |
               match rest {
                 {} => { 
+                  //trace!("end") |
                   for ( counts <- countCh ) {
+                    trace!(*counts)  |
                     return!(*counts) 
                   }
                 }
@@ -114,7 +124,7 @@ in {
     }
   }
   |
-  new bCh, v1Ch, v2Ch, v3Ch in {
+  new bCh, v1Ch, v2Ch, v3Ch, v4Ch in {
     trace!("creating Ballot") |
     Ballot!(Set("Lincoln", "Douglas"), *bCh) |
     for (admin, tally <- bCh) {
@@ -122,16 +132,18 @@ in {
       admin!("giveRightToVote", "Owans", *v1Ch) |
       admin!("giveRightToVote", "jimscarver", *v2Ch) |
       admin!("giveRightToVote", "aviation_hacker", *v3Ch) |
-      admin!("giveRightToVote", "momchilov", *trace) |
-      for(v1 <- v1Ch; v2 <- v2Ch; v3 <- v3Ch) {
+      admin!("giveRightToVote", "momchilov", *v4Ch) |
+      for(v1 <- v1Ch; v2 <- v2Ch; v3 <- v3Ch; v4 <- v4Ch) {
         v3!("delegate", "jimscarver", *v3Ch) |
-        v3!("delegate", "Owens", *v3Ch) |
-        for(_ <- v3Ch) {
-          v1!("vote", "Douglas", *trace, *v1Ch) |
+        v2!("delegate", "Owens", *v3Ch) |
+        v2!("delegate", "Owans", *v3Ch) |
+        for(_ <- v3Ch; _ <- v3Ch ) {
+          trace!("voting.") |
           v1!("vote", "Lincoln", *trace, *v1Ch) |
+          v1!("vote", "Douglas", *trace, *v1Ch) |
           v1!("vote", "Abe Lincoln", *trace, *v1Ch) |
-          v2!("vote", "Lincoln", *trace, *v2Ch) |
-          for(_ <- v1Ch; _ <- v2Ch) {
+          v4!("vote", "Lincoln", *trace, *v2Ch) |
+          for(_ <- v1Ch; _ <- v1Ch; _ <- v1Ch; _ <- v2Ch) {
             trace!("votes done") |
             tally!(*bCh) |
             for(@w <- bCh) {
