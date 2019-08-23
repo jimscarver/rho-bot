@@ -1,5 +1,6 @@
-```scala
-define: $allowalltovote($community,$ballot) new lockerCh, ret, ret1, ret2, ret3, loop, $stdout, $lookup in {
+#define $community "colab"
+#define $ballot "weather"
+ new lockerCh, ret, ret1, ret2, ret3, loop, $stdout, $lookup in {
     lookup!($locker_%%$myusername, *lockerCh) |
   for(locker <- lockerCh) {
         locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *ret) |
@@ -32,4 +33,3 @@ stdout!([username, "added"]) |
       stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])
     }}
 }
-```

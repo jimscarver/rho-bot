@@ -70,17 +70,10 @@ in {
           } |
           contract voter(@"delegate", @delegate, ack) = {
           // name s.b. unique, public key suggested.
-            for ( @prior <- delegateCh; @voters <- voterCh ) {
-              voterCh!(voters) |
-              if ( voters.get(delegate) == Nil ) {
-                trace!(delegate ++ " in not a voter on this ballot.") |
-                ack!(false) |
-                delegateCh!(prior)
-              } else {
-                trace!(name ++ " delegates to " ++ delegate) |
+            for ( @prior <- delegateCh ) {
+                trace!((name, "delegates to", delegate)) |
                 ack!(true) |
                 delegateCh!(delegate)
-              }
           }
         }
       }
