@@ -74,16 +74,32 @@
 #define   $addmember($community,$user)  new $stdout, $lookup, ret, boxCh, ack in {   $peek("Community",$community,*ret )|"~~"  lookup!($inbox_%%$user,*boxCh)|"~~"  for ( @[{"admin": *admin, "read": *read, "write": *write, "grant": *grant}] <- ret; box <- boxCh ) {"~~"    stdout!("adding user")|"~~"    admin!("add user", $user, *box, *ret) |"~~"    for (selfmod <- ret ) {"~~"       stdout!("user added") |"~~"      box!(["member",$community,{"read": *read, "selfmod": *selfmod}],*stdout)"~~"    }}}
 #define  $membersOf($community,$return) new $stdout, ret in { "~~" $peek("member",$community, *ret)|for ( @[caps] <- ret) {"~~"  @{caps.get("read")}! ($return)"~~"}}
 #define  $allowalltovote($community,$ballot) new lockerCh, ret, ret1, ret2, ret3, loop, $stdout, $lookup in {     lookup!($locker_%%$myusername, *lockerCh) |"~~"  for(locker <- lockerCh) {"~~"        locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *ret) |"~~"    for (@items  <- ret) {"~~"            @{items.get("peek")}!("member", $community, *ret) |"~~"      @{items.get("peek")}!("ballot", $ballot, *ret1) |"~~"      for ( @[{"read": *read, ..._}, ..._] <- ret;  @[{"admin": *admin, ..._}, ..._] <- ret1 ) {"~~"        stdout!("adding users") |"~~"        contract loop ( @map ) = {"~~"          match  map {"~~"              {} => Nil"~~"             {  username: {"inbox": *inbox, "delegate": delegate, ..._}, ...tail } => {"~~"                  stdout!(["user",username]) |"~~"                  admin!("giveRightToVote", username, *ret2) |"~~"                 for (@vote <- ret2) {"~~"stdout!([username, "added"]) |"~~"                      inbox!(["vote", $ballot, vote], *stdout) |"~~"                      @vote!("delegate",delegate, *stdout)"~~"                 }|"~~"                 loop!(tail)"~~"             }"~~"             somethingelse => stdout!(["somethingelse", somethingelse])"~~"          }"~~"        }|"~~"        read!(*ret3) |"~~"        for ( @members <- ret3 ) {"~~"                 stdout!(["keys",members.keys()]) |"~~"                 loop!(members)"~~"      }} |"~~"      stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])"~~"    }}"~~"}
-#define $locker_nonce_aviation_hacker 16
 #define  $vote($ballot,$vote) new ret, lockerCh, itemsCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {     lookup!($locker_%%$myusername, *lockerCh) |"~~"  for(locker <- lockerCh) {"~~"        locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |"~~"    for (@items  <- itemsCh) {"~~"            if ( items.get("peek") == Nil ) {"~~"                stdout!("you do not have a peek channel for your inbox")      "~~"      }else {"~~"                stdout!("getting voter") |"~~"        @{items.get("peek")}!("vote", $ballot, *ret) |"~~"        for( @{[voter]}  <- ret ) {"~~"                    @voter!("vote",$vote,*stdout,*ret) |"~~"          stdout!(["vote",$ballot,$myusername,"received"]) |"~~"          for (success <- ret ) {"~~"                       @{items.get("peek")}!("vote", $ballot, *ret) |"~~"            stdout!(*success)          "~~"          }}      "~~"      }|"~~"      stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])"~~"    }}"~~"}
-#define $locker_nonce_jimscarver 1
-#define $locker_jimscarver `rho:id:5agduqn6jmzu8g4kykyi8wguguk48ymo4o6s6a8us5ncg4jz58p8ay`
-#define $inbox_jimscarver `rho:id:esiadqwogy4fc8mz3d57yh8qnk7a3x7azikup95583gt1jrg439djg`
-#define $locker_Rich `rho:id:9yb3d5mnt338wo9gprz3mobhqzwxojamy8fbpah3gx5b57pyrksxxu`
-#define $locker_nonce_Rich 1
-#define $inbox_Rich `rho:id:tbb6yxtykoj6ubbeno7n4iqiuzo5615wpddkmq5q31mq41j95xcq8i`
-#define $Locker `rho:id:gd1p5rocfdx7nbp9j1rk99hogce4d7qq1y3hcbspeeomwu9ddhaysp`
-#define $Inbox `rho:id:uk6bksf3ab9pqnzrf3kqct51316e4fxc3a8kmnjqr4wjf6kd19saep`
-#define $Directory `rho:id:1znd5c3bag777q5yffeudw9kaj3k9rjbueadwi5o35r4cc64y8noue`
-#define $Community `rho:id:ksitfrd5fedt1a7utqtk8rhjyx7qibxumhsq9j4qs1891furum7sbi`
-#define $Ballot `rho:id:357sw8bq39wer3sr81j4d4enu9wai7t9k4b97mddpx53b7er481n5m`
+#define $locker_dummyuser `rho:id:mxxx7mhnoobnya7ww4kjtenthgryekpweasq7ci7d3szuk9uy5tio6`
+#define $inbox_dummyuser `rho:id:mxgbnjt9waorukywnht1unk48enhepswfzot1r8z6j43sw1nrjx5r7`
+#define $locker_nonce_dummyuser 3
+#define $Locker `rho:id:38xzio9r6tnz8b9hq6wsq568fkjtco5gzfui7nrzumdqgkqd4fg7mj`
+#define $Inbox `rho:id:yajr4m39raudbr97uopeerwh1ke3y3x91okbqbdp1r6ers1wjzud5u`
+#define $Directory `rho:id:7ciexhdmqgk1uroenompnsjfjem1pdk16h7kdt8xjx49tpqkeb5foh`
+#define $Community `rho:id:zzdxmfigb599wu1d6wax3ny7pu8orernzn99y5z6kjzy67m7bq8g79`
+#define $locker_jimscarver `rho:id:7fq98759nqc98tte1jynx61q6cukrp5izfm9ikmx34a896dz7e3f5p`
+#define $inbox_jimscarver `rho:id:dwk1cgambtjot79rx7kn1rgbg7wtbmxyopm6dhoxadftcg8o135wct`
+#define $inbox_SteveHenley `rho:id:5hiwaiubqptfbj4ac64r4sepz4dnfjjukdcqmqj6mr67x5hdeojp5q`
+#define $locker_SteveHenley `rho:id:hwfu45sdwy5nu55r8ctso9wqrid39y5bd4t8i7skdwpdtnubwyzaa4`
+#define   $mydelegate($ballot,$username)   new $stdout, $lookup, ret, ret2 in {    $peek("vote",$ballot, *ret)|"~~"  lookup!($inbox_%%$myusername, *ret2) |"~~"  stdout!("setting delegate") |"~~"  for ( @[vote] <- ret; inbox <- ret2 ) {"~~"    stdout!("got inbox and vote") |"~~"    @vote!("delegate",  $username, *stdout)"~~"  }}
+#define $getTicket `rho:id:bkjmuznonx7tmshq7xhh65pe8mpdao6aui63ueh65rzemjycgywkex`
+#define $locker_Rich `rho:id:a6xoi7brh5k67homzj63zo4jz1uxbdtfy1ro8ntgkrkb7c1gftzdra`
+#define $inbox_Rich `rho:id:xgdmunho1thgzug5z6kuwwo9kn3dqysgeca6c4frj9h6g6qfdw5fkk`
+#define $locker_aviation_hacker `rho:id:hztzdk134nmx36rxcpsbkbzxczjcyr8rmuwub3dqdtpaairina88p5`
+#define $inbox_aviation_hacker `rho:id:mwizitgrahdokst6oaa9998rzizcy76ofhfixa19t4yrds8sh6ft57`
+#define $locker_nonce_Rich 3
+#define $locker_nonce_aviation_hacker 7
+#define   $mydefaultdelegate($community,$username)   new $stdout, $lookup, ret, ret2 in {    $peek("member",$community, *ret)|   lookup!($inbox_%%$myusername, *ret2) |"~~"  stdout!("setting delegate") |"~~"  for ( @[caps] <- ret; inbox <- ret2 ) {"~~"    stdout!("got inbox and capabilities") |"~~"    @{caps.get("selfmod").get("selfupdate")}!({"inbox":  *inbox, "delegate": $username},*stdout)"~~"  }}
+#define $locker_nonce_SteveHenley 10
+#define $locker_nonce_jimscarver 33
+#define $locker_nonce_jimscarver 33
+#define $locker_nonce_jimscarver 33
+#define $Ballot `rho:id:w6a5g8e971b61cbgmy8mtbf7h9zh8ofjcp3p4kzkgpwmsjkbbrdprd`
+#define $Ballot `rho:id:w6a5g8e971b61cbgmy8mtbf7h9zh8ofjcp3p4kzkgpwmsjkbbrdprd`
+#define $locker_nonce_jimscarver 33
+#define $locker_nonce_jimscarver 33
