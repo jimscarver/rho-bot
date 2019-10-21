@@ -1,0 +1,15 @@
+# preeprocess and execute rholang
+# usage: ./rhoexec filename
+file=$1
+nonce=$2
+if [ "$nonce" ]; then sed -i "/^#define \$locker_nonce_/ s/ [0-9]*$/ $nonce/" dummyuser.h; fi
+
+  cat global.h dummyuser.h end.h "$1" |
+  cpp 2>/dev/null|
+  sed -n '/^_end_$/,${s/\%\%"\([^"]*\)"/\1/g;s/"~~"/ /g;p}'|tee /dev/tty|
+  cat global.h dummyuser.h -|cpp 2>/dev/null|
+  sed -n '/^_end_$/,$p' |
+  tail +2 >"$1"x &&
+    rnode deploy --phlo-limit 10000000000 --private-key 1dbab0e3b53fe4dbb92d0a4d6e9a82e35967fab3bb7e290190a6b8924a62aded --phlo-price 1 "$1"x
+
+if [ "$nonce" ]; then sed -i "/^#define \$locker_nonce_/ s/ [0-9]*$/ "$(expr $nonce + 1)"/" dummyuser.h; fi

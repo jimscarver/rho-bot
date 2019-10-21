@@ -31,7 +31,7 @@ var currentMessage;
 var lastMessage;
 tail.on("line", function(data) {
   let hide = 0;
-  if ( data.match(/^[0-9]|^true|^false|^Unforgeable|^bundle|^@|^Nil$|^\(|^"|^[0-9.][0-9.]*$|^Set|^\[|^\{|^\(|^`|^Syntax Error/)) { // if stdout data
+  if ( data.match(/^[0-9]|^true|^false|^Unforgeable|^bundle|^@|^Nil$|^\(|^".*"|^[0-9.][0-9.]*$|^Set|^\[|^\{|^\(|^`|^Syntax Error/)) { // if stdout data
      data =  data.replace(/Unforgeable\(0x([0-9a-z]{6})[^)]*\)/g,'<$1..>');
      console.log("log: "+data);
      if ( data.match(/\["#define \$/) ) {
@@ -102,6 +102,7 @@ client.on('ready', () => {
 client.on('message', msg => {
     if (msg.content === 'ping') {
         console.log(msg);
+        console.log(msg.attachment);
         msg.reply('Pong!');
     } else if (msg.content == 'keybase bridge start' ) {
         keybase.watch(); // turn on reporting log output as msg.reply

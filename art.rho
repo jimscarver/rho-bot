@@ -1,0 +1,36 @@
+new artobj, $stdout, transferagreement in {
+ contract artobj (@"new", certOfAuth, artist, owner, resalecontract, return) = {
+  new buy, sell, data, artistCh, anArtObj, admin in {
+   data!({"certOfAuth": *certOfAuth, "owner": *owner, "contract": *resalecontract}) |
+   artistCh!(*artist) |
+   return!(*anArtObj,*admin)|
+   contract admin ( @"sell", price ) = {
+    stdout!("hi")
+  } |
+   contract admin (@"setData", key, value ) = {
+     for ( dat <- data ) {
+       data!({*key: *value}.union(*dat)) 
+     }
+ } |
+   contract anArtObj (@"getData", key, value ) = {
+     for ( dat <- data ) {
+      data!(*dat) |
+      value!({*dat}.get(*key) )
+     }
+ } |
+   contract anArtObj (@"buy", who, payment ) = {
+    Nil
+ } |
+   contract anArtObj (@"info", payment ) = {
+    Nil
+ }
+}
+|
+ contract transferagreement () = {
+    Nil
+ }
+} |
+new ericvideo,caps in {
+  artobj!("new", {"name": "cool vid"}, {"name": "eric" }, *transferagreement, *caps)
+}
+}
