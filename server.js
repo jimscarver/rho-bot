@@ -30,11 +30,19 @@ var debug = 3;
 var currentMessage;
 var lastMessage;
 tail.on("line", function(data) {
+if ( data.match(/[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9] .*INFO/)) {return};
   let hide = 0;
   if ( data.match(/^[0-9]|^true|^false|^Unforgeable|^bundle|^@|^Nil$|^\(|^".*"|^[0-9.][0-9.]*$|^Set|^\[|^\{|^\(|^`|^Syntax Error/)) { // if stdout data
      data =  data.replace(/Unforgeable\(0x([0-9a-z]{6})[^)]*\)/g,'<$1..>');
      console.log("log: "+data);
-     if ( data.match(/\["#define \$/) ) {
+     if ( data.match(/\["#define", "\$/) ) {
+       console.log("found a #define, name, value");
+       hide = 0;
+       let matches = data.match(/#define", "([^"]*)",(.*)\]/);
+       exec( "echo '#define "+matches[1]+' '+matches[2]+"' >>global.h");
+     } 
+     else if ( data.match(/\["#define \$/) ) {
+       console.log("found a #define");
        hide = 0;
        let matches = data.match(/(#define[^"]*)", (.*)\]/);
        exec( "echo '"+matches[1]+' '+matches[2]+"' >>global.h");
@@ -112,6 +120,29 @@ client.on('message', msg => {
         keybase.unwatch(); // turn on reporting log output as msg.reply
     }
 });
+client.on('message', msg => {
+ if ( msg.content.includes("479702072468439050") && 
+	msg.author.username != "RHO-bot" &&
+	"shadaloopropagandadepartment" == msg.channel.name ) {
+let messages = [
+        "ParickM does not care",
+        "Sorry I don't understand",
+        "Sorry I don't understand",
+        "Sorry I don't understand",
+	"this does not surprise me.",
+        "ParickM says you are fired.",
+        "PatrickM sometimes cares.",
+        "I dont understand the question but the answer is periwinkle blue.",
+        "PatrickM wants you boomer ass.",
+        "PatrickM doesn't normally roll up on that." ,
+        "The truth is in the DNA, as PatricM says.",
+        "PatrickM DOES NOT CARE SO EMOTIONALLY.",
+        "Do you think I am a human being?"
+      ];
+      var  message = messages[Math.floor(Math.random() * messages.length)];
+      msg.reply(message)
+ }
+})
 client.on('message', msg => {
 if ( msg.content == -1 ) { console.log("ug"); /* console.log(msg)*/ } else {
   console.log(msg.content);
@@ -262,7 +293,11 @@ if ( msg.content == -1 ) { console.log("ug"); /* console.log(msg)*/ } else {
     }
 
 
-    else if (content.match(/^eval:\s\s*/i)) {
+    else if (content.match(/^eval:\s\s*|^deploy:/i)) {
+         if (content.match(/^deploy:  *[a-zA-Z0-9_-]*:(\s|$)/) && !msg.author.bot) {
+          let match = content.match(/^deploy:  *([^:]*): *(.*)/);
+          content = "deploy: $"+match[1]+'('+match[2]+")";
+          }
         currentMessage = msg;
         tail.watch(); // turn on reporting log output as msg.reply
         const author = msg.author.username;
@@ -271,21 +306,23 @@ if ( msg.content == -1 ) { console.log("ug"); /* console.log(msg)*/ } else {
 	   '#define $myusername "'+msg.author.username.replace(" ","_")+"\"\n"+
 	   '#define $_messageid "'+msg.id+"\"\n"+
 	   '#define $_authorid "'+msg.author.id+"\"\n"+
-	   content.substring(5)+"\n";
+	   content.substring(content.indexOf(":")+1)+"\n";
         console.log(rholang);
         //let rholang =  content.substring(5);
 	      fs.writeFile("/tmp/"+author+".rhox", rholang, function(err) {
          if(err) {
           return console.log(err);
          }
+let doit="curl -d @/tmp/"+author+".rho http://localhost:40403/api/explore-deploy 2>&1";
+if (content.match(/^deploy:/)) { doit="set 2>&1;./deploy /tmp/"+author+".rho;sleep 5;rnode --grpc-port 40402 propose" }
 
          console.log("The file was saved!");
          let bash = "cat global.h '/tmp/"+author+".rhox' |cpp 2>cpperrors|"+
            "sed 's/\\%\\%\"\\([^\"]*\\)\"/\\1/g;s/\"~~\"/\\n/g'|"+
            "cat global.h end.h -|cpp 2>cpperrors2|sed -n '/^#/d;/^_end_$/,$p'|tee lasteval|"+
            "tail +2 >'/tmp/"+author+".rho';"+
-           "rnode eval '/tmp/"+author+".rho' 2>&1|"+
-           "sed '1,3d;/^Storage Contents:/{x;q}'";
+           doit+"|"+
+           "grep -i error";
          console.log(bash);
          dir = exec(bash,
          //dir = exec(" rnode eval /tmp/"+author+".rho|sed '2,3d;/^Storage Contents:/{x;q}'", 
@@ -330,7 +367,7 @@ if ( msg.content == -1 ) { console.log("ug"); /* console.log(msg)*/ } else {
     }
     else if (content.match(/^propose:/i)) {
         console.log(content);
-        dir = exec("rnode propose", function(err, stdout, stderr) {
+        dir = exec("rnode --grpc-port 40402 propose 2>&1", function(err, stdout, stderr) {
             if (err) {
                 // should have err.code here?
             }

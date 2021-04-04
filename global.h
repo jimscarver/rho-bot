@@ -75,35 +75,12 @@
 #define  $membersOf($community,$return) new $stdout, ret in { "~~" $peek("member",$community, *ret)|for ( @[caps] <- ret) {"~~"  @{caps.get("read")}! ($return)"~~"}}
 #define  $allowalltovote($community,$ballot) new lockerCh, ret, ret1, ret2, ret3, loop, $stdout, $lookup in {     lookup!($locker_%%$myusername, *lockerCh) |"~~"  for(locker <- lockerCh) {"~~"        locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *ret) |"~~"    for (@items  <- ret) {"~~"            @{items.get("peek")}!("member", $community, *ret) |"~~"      @{items.get("peek")}!("ballot", $ballot, *ret1) |"~~"      for ( @[{"read": *read, ..._}, ..._] <- ret;  @[{"admin": *admin, ..._}, ..._] <- ret1 ) {"~~"        stdout!("adding users") |"~~"        contract loop ( @map ) = {"~~"          match  map {"~~"              {} => Nil"~~"             {  username: {"inbox": *inbox, "delegate": delegate, ..._}, ...tail } => {"~~"                  stdout!(["user",username]) |"~~"                  admin!("giveRightToVote", username, *ret2) |"~~"                 for (@vote <- ret2) {"~~"stdout!([username, "added"]) |"~~"                      inbox!(["vote", $ballot, vote], *stdout) |"~~"                      @vote!("delegate",delegate, *stdout)"~~"                 }|"~~"                 loop!(tail)"~~"             }"~~"             somethingelse => stdout!(["somethingelse", somethingelse])"~~"          }"~~"        }|"~~"        read!(*ret3) |"~~"        for ( @members <- ret3 ) {"~~"                 stdout!(["keys",members.keys()]) |"~~"                 loop!(members)"~~"      }} |"~~"      stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])"~~"    }}"~~"}
 #define  $vote($ballot,$vote) new ret, lockerCh, itemsCh, lookup(`rho:registry:lookup`), stdout(`rho:io:stdout`) in {     lookup!($locker_%%$myusername, *lockerCh) |"~~"  for(locker <- lockerCh) {"~~"        locker!("get", $myprivkey.hexToBytes(), $locker_nonce_%%$myusername, *stdout, *itemsCh) |"~~"    for (@items  <- itemsCh) {"~~"            if ( items.get("peek") == Nil ) {"~~"                stdout!("you do not have a peek channel for your inbox")      "~~"      }else {"~~"                stdout!("getting voter") |"~~"        @{items.get("peek")}!("vote", $ballot, *ret) |"~~"        for( @{[voter]}  <- ret ) {"~~"                    @voter!("vote",$vote,*stdout,*ret) |"~~"          stdout!(["vote",$ballot,$myusername,"received"]) |"~~"          for (success <- ret ) {"~~"                       @{items.get("peek")}!("vote", $ballot, *ret) |"~~"            stdout!(*success)          "~~"          }}      "~~"      }|"~~"      stdout!(["#define $locker_nonce_" ++ $myusername, {$locker_nonce_%%$myusername + 1}])"~~"    }}"~~"}
-#define $locker_dummyuser `rho:id:mxxx7mhnoobnya7ww4kjtenthgryekpweasq7ci7d3szuk9uy5tio6`
-#define $inbox_dummyuser `rho:id:mxgbnjt9waorukywnht1unk48enhepswfzot1r8z6j43sw1nrjx5r7`
-#define $locker_nonce_dummyuser 3
-#define $inbox_jimscarver `rho:id:dwk1cgambtjot79rx7kn1rgbg7wtbmxyopm6dhoxadftcg8o135wct`
-#define $inbox_SteveHenley `rho:id:5hiwaiubqptfbj4ac64r4sepz4dnfjjukdcqmqj6mr67x5hdeojp5q`
-#define $locker_SteveHenley `rho:id:hwfu45sdwy5nu55r8ctso9wqrid39y5bd4t8i7skdwpdtnubwyzaa4`
+#define $inbox_dummyuser `rho:id:rynzwt6gdma3c6h71teq6mg7gyu88bok38yharnmeoq1ogg6pgff4p`
 #define   $mydelegate($ballot,$username)   new $stdout, $lookup, ret, ret2 in {    $peek("vote",$ballot, *ret)|"~~"  lookup!($inbox_%%$myusername, *ret2) |"~~"  stdout!("setting delegate") |"~~"  for ( @[vote] <- ret; inbox <- ret2 ) {"~~"    stdout!("got inbox and vote") |"~~"    @vote!("delegate",  $username, *stdout)"~~"  }}
-#define $getTicket `rho:id:bkjmuznonx7tmshq7xhh65pe8mpdao6aui63ueh65rzemjycgywkex`
-#define $locker_Rich `rho:id:a6xoi7brh5k67homzj63zo4jz1uxbdtfy1ro8ntgkrkb7c1gftzdra`
-#define $inbox_Rich `rho:id:xgdmunho1thgzug5z6kuwwo9kn3dqysgeca6c4frj9h6g6qfdw5fkk`
-#define $locker_aviation_hacker `rho:id:hztzdk134nmx36rxcpsbkbzxczjcyr8rmuwub3dqdtpaairina88p5`
-#define $inbox_aviation_hacker `rho:id:mwizitgrahdokst6oaa9998rzizcy76ofhfixa19t4yrds8sh6ft57`
-#define $locker_nonce_Rich 3
-#define $locker_nonce_aviation_hacker 7
 #define   $mydefaultdelegate($community,$username)   new $stdout, $lookup, ret, ret2 in {    $peek("member",$community, *ret)|   lookup!($inbox_%%$myusername, *ret2) |"~~"  stdout!("setting delegate") |"~~"  for ( @[caps] <- ret; inbox <- ret2 ) {"~~"    stdout!("got inbox and capabilities") |"~~"    @{caps.get("selfmod").get("selfupdate")}!({"inbox":  *inbox, "delegate": $username},*stdout)"~~"  }}
-#define $locker_nonce_SteveHenley 10
-#define $Ballot `rho:id:zpggbeyc5geswr1airbof3bf7oiopk375h1uoyw7pe3uabig9no8xt`
-#define $Directory `rho:id:kyd765ua5p363qd5bd1ysytpprn33n1sizwhm6csrj4xepdqcat9wm`
-#define $Community `rho:id:iqqjjtzbq9r75o4f4oxurjg4k9uw3jxdss9i546dj9krw6hcyckfa3`
-#define $Inbox `rho:id:rrrdmiwcjnugjam7bpiz3cnorsamnj17s17z5jxq3zhj93t9pqky5i`
-#define $Ballot `rho:id:zpggbeyc5geswr1airbof3bf7oiopk375h1uoyw7pe3uabig9no8xt`
-#define $Ballot `rho:id:zpggbeyc5geswr1airbof3bf7oiopk375h1uoyw7pe3uabig9no8xt`
-#define $Directory `rho:id:kyd765ua5p363qd5bd1ysytpprn33n1sizwhm6csrj4xepdqcat9wm`
-#define $Community `rho:id:iqqjjtzbq9r75o4f4oxurjg4k9uw3jxdss9i546dj9krw6hcyckfa3`
-#define $Inbox `rho:id:rrrdmiwcjnugjam7bpiz3cnorsamnj17s17z5jxq3zhj93t9pqky5i`
-#define $Ballot `rho:id:zpggbeyc5geswr1airbof3bf7oiopk375h1uoyw7pe3uabig9no8xt`
 #define $Locker `rho:id:s8cnegq8j35k9st1h7bkod4mfdir87irumjw3m6a1h66uh9jnw655x`
 #define $Locker `rho:id:s8cnegq8j35k9st1h7bkod4mfdir87irumjw3m6a1h66uh9jnw655x`
 #define $locker_jimscarver `rho:id:997g87acwt1duub955ci1ssb1tu6t8hm3jkdxudrryaw93rt5k3um9`
-#define $locker_jimscarver `rho:id:997g87acwt1duub955ci1ssb1tu6t8hm3jkdxudrryaw93rt5k3um9`
-#define $locker_nonce_jimscarver 36
-#define $locker_nonce_jimscarver 36
+#define  $balance($revaddr) new return(`rho:io:stdout`), lookup(`rho:registry:lookup`),"~~"    RevVaultCh, vaultCh, balanceCh in {"~~"      lookup!(`rho:rchain:revVault`, *RevVaultCh) |"~~"      return!("looking up REV balance for " ++ $revaddr) |"~~"      for (@(_, RevVault) <- RevVaultCh) {"~~"        return!("found revVault") |"~~"        @RevVault!("findOrCreate", $revaddr, *vaultCh) |"~~"        for (@(true, vault) <- vaultCh) {"~~"          @vault!("balance", *balanceCh) |"~~"          for (@balance <- balanceCh) {"~~"            return!(["#define", "$myBalance", balance])"~~"          }"~~"        }"~~"      }"~~"    }
+#define  $urireg($value) new return(`rho:io:stdout`), uriCh, valueCh,"~~"  insertArbitrary(`rho:registry:insertArbitrary`)"~~"in {"~~"    insertArbitrary!( $value, *uriCh) |"~~"    for (@uri <- uriCh) {"~~"      return!(("URI", uri))"~~"    }"~~"  }
+#define  $lookupuri($uri) new return(`rho:io:stdout`),"~~"  lookup(`rho:registry:lookup`), valueCh in {"~~"   lookup!( `$uri` , *valueCh) |"~~"    for (@value <- valueCh) {"~~"      return!(("Value from registry", value))"~~"    }"~~"  }
