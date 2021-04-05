@@ -293,11 +293,15 @@ if ( msg.content == -1 ) { console.log("ug"); /* console.log(msg)*/ } else {
     }
 
 
-    else if (content.match(/^eval:\s\s*|^deploy:/i)) {
-         if (content.match(/^deploy:  *[a-zA-Z0-9_-]*:(\s|$)/) && !msg.author.bot) {
+    else if (content.match(/^eval:\s\s*|^deploy:|^explore:/i)) {
+        if (content.match(/^deploy:  *[a-zA-Z0-9_-]*:(\s|$)/) && !msg.author.bot) {
           let match = content.match(/^deploy:  *([^:]*): *(.*)/);
           content = "deploy: $"+match[1]+'('+match[2]+")";
-          }
+        }
+        if (content.match(/^explore:  *[a-zA-Z0-9_-]*:(\s|$)/) && !msg.author.bot) {
+          let match = content.match(/^explore:  *([^:]*): *(.*)/);
+          content = "explore: $"+match[1]+'('+match[2]+")";
+        }
         currentMessage = msg;
         tail.watch(); // turn on reporting log output as msg.reply
         const author = msg.author.username;
@@ -314,8 +318,11 @@ if ( msg.content == -1 ) { console.log("ug"); /* console.log(msg)*/ } else {
           return console.log(err);
          }
 let doit="curl -d @/tmp/"+author+".rho http://localhost:40403/api/explore-deploy 2>&1";
-if (content.match(/^deploy:/)) { doit="set 2>&1;./deploy /tmp/"+author+".rho;sleep 5;rnode --grpc-port 40402 propose" }
-
+if (content.match(/^deploy:/)) { 
+  doit="set 2>&1;./deploy /tmp/"+author+".rho;sleep 5;rnode --grpc-port 40402 propose" 
+} else if (content.match(/^eval:/)) {
+  doit="rnode --grpc-port 40402 eval '/tmp/"+author+".rho' 2>&1"
+}
          console.log("The file was saved!");
          let bash = "cat global.h '/tmp/"+author+".rhox' |cpp 2>cpperrors|"+
            "sed 's/\\%\\%\"\\([^\"]*\\)\"/\\1/g;s/\"~~\"/\\n/g'|"+
