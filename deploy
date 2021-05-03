@@ -1,11 +1,11 @@
 #!/bin/bash
 
 private_key=`cat pk.bootstrap`
-
+blockNumber=$( curl -s http://localhost:40403/api/blocks/1|jq '.|.[].blockNumber')
 for t in $@;do
    echo "Deploying $t"
    rnode deploy \
-   --valid-after-block-number 0 \
+   --valid-after-block-number $blockNumber \
    --phlo-price 1 \
    --phlo-limit 1000000000 \
    --private-key $private_key \

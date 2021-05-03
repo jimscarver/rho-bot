@@ -66,6 +66,7 @@ if ( data.match(/[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9] .*INFO/)) {return};
            }
          });
        }
+     } else {
      }
      hide = data.match(/^"locker.get\(...\)"|^\(?\["debug:|^Error: .*: Unrecognized interpreter errorError: coop.rchain.rholang.interpreter.errors$LexerError: Illegal Character <$>/) ? 2:hide;
      if ( currentMessage ) {
@@ -395,6 +396,8 @@ if (content.match(/^deploy:/)) {
         content = "eval: $"+content.match(/(^[^:]*)/)[1];
       }
       repeat = true; retry = retry + 1;
+    } else {
+      tail.unwatch()
     }
   }
 }});

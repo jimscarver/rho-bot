@@ -1,0 +1,38 @@
+new return(`rho:rchain:deployId`), lookup(`rho:registry:lookup`), ret, alicePurseCh, bobPurseCh,
+  initialAlicePurseBalanceCh, initialBobPurseBalanceCh,successCh, finalAlicePurseBalanceCh,
+  finalBobPurseBalanceCh, stdout(`rho:io:stdout`) in {
+    lookup!( `rho:id:rgd9xzheeo33tn765wjijox7kd7ciar4jr7qkq9g64n4qmdxxrd35m` , *ret) |
+    for (mint <- ret) {
+     stdout!("got mint") |
+     match (100000000, 1000) {
+        (aliceAmt, bobAmt) => {
+          stdout!("got init bals") |
+          // Alice's purse has maximum balance.
+          mint!("makePurse", aliceAmt, *alicePurseCh) |
+          mint!("makePurse", bobAmt, *bobPurseCh) |
+          for (alicePurse <- alicePurseCh;
+               bobPurse   <- bobPurseCh) {
+            stdout!("got purses")|
+            alicePurse!("getBalance", *initialAlicePurseBalanceCh) |
+            bobPurse!("getBalance", *initialBobPurseBalanceCh) |
+            for (@initialAlicePurseBalance <- initialAlicePurseBalanceCh;
+                 @initialBobPurseBalance   <- initialBobPurseBalanceCh) {
+              stdout!("got init bals again")|
+              // Depositing any funds to Alice results in overflow.
+              alicePurse!("deposit", 1, *bobPurse, *successCh) |
+              for (@flag <- successCh) {
+                stdout!(["got success", flag])|
+                alicePurse!("getBalance", *finalAlicePurseBalanceCh) |
+                bobPurse!("getBalance", *finalBobPurseBalanceCh) |
+                for (@finalAlicePurseBalance <- finalAlicePurseBalanceCh;
+                     @finalBobPurseBalance   <- finalBobPurseBalanceCh) {
+                  stdout!("got final")|
+                  return!("bob bal", finalBobPurseBalance, "alice bal", finalAlicePurseBalance)
+                  }
+                }
+              }
+            }
+          }
+       }
+     }
+ }

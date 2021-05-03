@@ -84,3 +84,51 @@
 #define  $balance($revaddr) new return(`rho:io:stdout`), lookup(`rho:registry:lookup`),"~~"    RevVaultCh, vaultCh, balanceCh in {"~~"      lookup!(`rho:rchain:revVault`, *RevVaultCh) |"~~"      return!("looking up REV balance for " ++ $revaddr) |"~~"      for (@(_, RevVault) <- RevVaultCh) {"~~"        return!("found revVault") |"~~"        @RevVault!("findOrCreate", $revaddr, *vaultCh) |"~~"        for (@(true, vault) <- vaultCh) {"~~"          @vault!("balance", *balanceCh) |"~~"          for (@balance <- balanceCh) {"~~"            return!(["#define", "$myBalance", balance])"~~"          }"~~"        }"~~"      }"~~"    }
 #define  $urireg($value) new return(`rho:io:stdout`), uriCh, valueCh,"~~"  insertArbitrary(`rho:registry:insertArbitrary`)"~~"in {"~~"    insertArbitrary!( $value, *uriCh) |"~~"    for (@uri <- uriCh) {"~~"      return!(("URI", uri))"~~"    }"~~"  }
 #define  $lookupuri($uri) new return(`rho:io:stdout`),"~~"  lookup(`rho:registry:lookup`), valueCh in {"~~"   lookup!( `$uri` , *valueCh) |"~~"    for (@value <- valueCh) {"~~"      return!(("Value from registry", value))"~~"    }"~~"  }
+#define  $tally($issue)  match ["inbox", $issue] {"~~"  [lockerTag, issue] => {"~~"    new"~~"    return(`rho:rchain:deployId`),"~~"    deployerId(`rho:rchain:deployerId`),"~~"    stdout(`rho:io:stdout`),"~~"    ch"~~"    in {"~~"      for (@{ "peek": *peek, ..._ } <<- @[*deployerId, lockerTag]) {"~~"        peek!("issue", issue, *ch) |"~~"        for (@[{"tally": *tally, ...restOfStuff }] <- ch) {"~~"          tally!(*return, *stdout)"~~"        }"~~"      }"~~"    } "~~"  }"~~"}
+#define   $lookupuri($uri) new return(`rho:io:stdout`), lookup(`rho:registry:lookup`), valueCh in {"~~"  lookup!( $uri , *valueCh) |"~~"  for (@value <- valueCh) {"~~"    return!(("Value from registry", value))"~~"  }"~~"}
+#define   $lookupuri($uri) explore: new return(`rho:io:stdout`), lookup(`rho:registry:lookup`), valueCh in {"~~"  lookup!( $uri , *valueCh) |"~~"  for (@value <- valueCh) {"~~"    return!(("Value from registry", value))"~~"  }"~~"}
+#define   $lookupuri($uri) new return(`rho:io:stdout`), lookup(`rho:registry:lookup`), valueCh in {"~~"  lookup!( $uri , *valueCh) |"~~"  for (@value <- valueCh) {"~~"    return!(("Value from registry", value))"~~"  }"~~"}
+#define $myBalance  0
+#define $myBalance  10000000000
+#define $inbox  `rho:id:78fp3b8mq84e8kwdct93cyezoqexa7mkukkn8rds8mbnrt17az18sz`
+#define $inbox  `rho:id:78fp3b8mq84e8kwdct93cyezoqexa7mkukkn8rds8mbnrt17az18sz`
+#define $inbox  `rho:id:egfozts5jamxrwwtuwmrah6nixsitjtft73a9sgkrhpwdcuuu6kryo`
+#define $inbox  `rho:id:egfozts5jamxrwwtuwmrah6nixsitjtft73a9sgkrhpwdcuuu6kryo`
+#define $Issue `rho:id:a1pc6fs6ppbi3uwmcxh3k44f9cyeko617uzf3r6q7op4kmx8496ip4`
+#define $Issue `rho:id:a1pc6fs6ppbi3uwmcxh3k44f9cyeko617uzf3r6q7op4kmx8496ip4`
+#define $inbox  `rho:id:7cu8qtd7kh4sr7yys9hs1scwjgqf3op1bwexeaeye6zifsnmans1e1`
+#define $inbox  `rho:id:7cu8qtd7kh4sr7yys9hs1scwjgqf3op1bwexeaeye6zifsnmans1e1`
+#define $inbox  `rho:id:brepys39ymegx9f4b963diz633fwsibuzgpijphrdtm9z1r4jxnyg8`
+#define $inbox  `rho:id:brepys39ymegx9f4b963diz633fwsibuzgpijphrdtm9z1r4jxnyg8`
+#define $inbox  `rho:id:ezhbzn63rxoisi33py11jpf1f9g6jeqgcpxebtcko5bu4bjpakbpq3`
+#define $inbox  `rho:id:ezhbzn63rxoisi33py11jpf1f9g6jeqgcpxebtcko5bu4bjpakbpq3`
+#define $inbox  `rho:id:xqsxesxxumd8ssa8suhbqezsngt6qwsdywywrskjnsp9r5fgf33f87`
+#define $inbox  `rho:id:xqsxesxxumd8ssa8suhbqezsngt6qwsdywywrskjnsp9r5fgf33f87`
+#define $Issue `rho:id:ubc194ikekabyis3mub3bmqcrkrico4j8adjpa5zbx96iwux7ywf89`
+#define $Issue `rho:id:ubc194ikekabyis3mub3bmqcrkrico4j8adjpa5zbx96iwux7ywf89`
+#define $inbox  `rho:id:wiqdk9bb48wgp84dbgcej3qqjm7a83sjsamz81ba8jp38bb7wrxk4e`
+#define $inbox  `rho:id:wiqdk9bb48wgp84dbgcej3qqjm7a83sjsamz81ba8jp38bb7wrxk4e`
+#define $inbox  `rho:id:zr69asw6751obskez7r4s94189pebjapam9q1sjpaw5rsw93uqd9bu`
+#define $inbox  `rho:id:zr69asw6751obskez7r4s94189pebjapam9q1sjpaw5rsw93uqd9bu`
+#define $inbox  `rho:id:fmdxd9uu45e4xgraom715qpnyj33g676pis8o4177qdssokp1we3o8`
+#define $inbox  `rho:id:fmdxd9uu45e4xgraom715qpnyj33g676pis8o4177qdssokp1we3o8`
+#define $inbox  `rho:id:5ahfds4mbsmu5mnxr8it15kxiapsxag73tsnaodpc9uh87jw375jio`
+#define $inbox  `rho:id:5ahfds4mbsmu5mnxr8it15kxiapsxag73tsnaodpc9uh87jw375jio`
+#define $inbox  `rho:id:c5ii7untb468y64h355pzh5yx5iswzezihrsf4z15y1z6j5pjtxttq`
+#define $inbox  `rho:id:c5ii7untb468y64h355pzh5yx5iswzezihrsf4z15y1z6j5pjtxttq`
+#define $inbox  `rho:id:9pcgmw3xznfwen5qk6qprtxkbuw83wjzoeoqp3egj9za8k3yimoaso`
+#define $inbox  `rho:id:9pcgmw3xznfwen5qk6qprtxkbuw83wjzoeoqp3egj9za8k3yimoaso`
+#define $inbox  `rho:id:5xa9c737iakgs7wuqwm1ifrsb1jgojhshhrhdotzm4bxirzfzu95bu`
+#define $inbox  `rho:id:5xa9c737iakgs7wuqwm1ifrsb1jgojhshhrhdotzm4bxirzfzu95bu`
+#define $inbox  `rho:id:b1a5pzykqzgom1986noxtoyfqm7jo9o14zh7uded4cfnskq6d8k88t`
+#define $inbox  `rho:id:b1a5pzykqzgom1986noxtoyfqm7jo9o14zh7uded4cfnskq6d8k88t`
+#define $Group `rho:id:ahhgoqb8wmn8u88qcx5tndft4ksah8nnpa8rkxa1tekrmm7wan9meh`
+#define $Group `rho:id:ahhgoqb8wmn8u88qcx5tndft4ksah8nnpa8rkxa1tekrmm7wan9meh`
+#define $Group `rho:id:e6k8bpsyiog5phmgntn1ygk5suerrtdmndojrhn6yhm8g5qx1omu6t`
+#define $Group `rho:id:e6k8bpsyiog5phmgntn1ygk5suerrtdmndojrhn6yhm8g5qx1omu6t`
+#define $inbox  `rho:id:88mou8pg5tfu1nbtq6y539hnembt33y19h7jkhyp3qpjokwysa71st`
+#define $inbox  `rho:id:88mou8pg5tfu1nbtq6y539hnembt33y19h7jkhyp3qpjokwysa71st`
+#define $Group `rho:id:oyrt3q7x8d6d76uwmw3wko7z74yjoz85bwxqy97f77dgdxcfwor6mx`
+#define $Group `rho:id:oyrt3q7x8d6d76uwmw3wko7z74yjoz85bwxqy97f77dgdxcfwor6mx`
+#define $myBalance  999978783181529
+#define $myBalance  999978783181529

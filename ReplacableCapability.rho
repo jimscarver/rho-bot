@@ -1,0 +1,27 @@
+new return(`rho:io:stdout`), // return(`rho:rchain:deployId`),
+  insertArbitrary(`rho:registry:insertArbitrary`),   ReplaceableCapability in {
+   new uriCh, valueCh in {
+    insertArbitrary!(bundle+{*ReplaceableCapability}, *uriCh) |
+    for (@uri <- uriCh) {
+      return!(("URI", uri))
+    }
+  } |
+ contract ReplaceableCapability(capability, ret) = {
+  new capCh, current, replace in {
+   capCh!(*capability) |
+   contract current(arg) = {
+    for ( curr <<- capCh ) {
+     curr!(*arg)
+   }}|
+   contract replace(newcapability, ret) = {
+    for ( curr <- capCh ) {
+     capCh!(*newcapability) |
+     ret!(*current)
+   }}|
+   ret!(*current,*replace) 
+ }} |
+new stdout(`rho:io:stdout`), ret, kickme in {
+ ReplaceableCapability!(*stdout,*ret) |
+ for ( thiscap, thisrep <- ret ) {
+  thiscap!("hello world.")
+}}}
